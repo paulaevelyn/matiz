@@ -28,6 +28,24 @@ rico, sem que isso implique patologizar ninguém.
 
 **Superficial:** os emojis, as cores por emoção, os exemplos de frases.
 
+### Camadas teóricas adicionais (tela "O que é uma emoção?")
+
+Antes das 6 emoções, uma tela conceitual cobre: (a) os três componentes de
+uma emoção — corpo, sentimento subjetivo, tendência de ação (Scherer); (b)
+função adaptativa das emoções básicas, sem hierarquia de "certo/errado";
+(c) **tendência de ação** (Frijda) — cada emoção carrega um impulso
+específico, e reconhecê-lo é o que abre a escolha de segui-lo ou não; (d)
+regulação emocional como habilidade de perceber→nomear→escolher (Gross),
+não como supressão; (e) dois radares de reconhecimento — interno
+(interocepção) e externo (expressões faciais/posturais universais,
+Ekman). Por emoção, o conteúdo também ganhou: origem evolutiva/vantagem
+adaptativa, a própria tendência de ação, sinais visíveis **em outras
+pessoas** (não só em si mesmo), uma cena "imagine que..." conectando com
+o cotidiano, e uma dica prática de aplicação. Dois desafios do jogo foram
+trocados por versões mais aplicadas: "Reconhecer nos outros" e "Aplicar
+na vida real", no lugar de "Função" e "Curiosidade científica" (que
+viraram conteúdo de leitura, não de teste — reduz redundância).
+
 ---
 
 ## Elementos transversais
@@ -43,6 +61,8 @@ rico, sem que isso implique patologizar ninguém.
 | Cartão de referência rápida (export) | Layout, cores | Ser um artefato físico/portátil usável fora do app — Oportunidade física (COM-B) |
 | Preferências (movimento, texto, contraste, áudio) | Ícones, textos | Controle explícito do usuário sobre estimulação sensorial e modalidade de apresentação — nunca inferido só do sistema operacional |
 | Autoavaliação antes/depois | Perguntas exatas, rótulos da escala | Não é instrumento validado — isso é sempre dito explicitamente; opcional e sem pressão |
+| Tailoring (perfil "corpo primeiro") | Nome da opção, texto | Reordena os 6 desafios do jogo — corpo antes do rótulo — para quem relata mais dificuldade em perceber sensações antes de nomear; escolhido em Preferências, não no onboarding forçado |
+| Dose Cultivada (check-in semanal) | Tags, texto do card | Auto-relato semanal de prática ativa do plano quando-então; só aparece pra quem já jogou uma vez; nunca bloqueante; "dispensar essa semana" é uma opção tão válida quanto registrar |
 | Pontuação e feedback | Cores, emojis das mensagens | Reforço sempre não-punitivo; nunca linguagem competitiva ou de comparação social |
 | Encerramento | Texto do fechamento | Sem gatilho de reengajamento artificial (sem "volte amanhã", sem streak, sem notificação) — bem-estar digital (Peters/Positive Computing) acima de tempo de tela |
 

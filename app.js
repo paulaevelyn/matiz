@@ -4,21 +4,60 @@ document.addEventListener('DOMContentLoaded', function () {
   var PREFS_KEY = 'matiz_prefs_v1';
   var SESSIONS_KEY = 'matiz_v1';
   var PROGRESS_KEY = 'matiz_progress_v1';
+  var DOSE_KEY = 'matiz_dose_v1';
+
+  var DOSE_TAGS = ['🔍 Percebi um sinal no corpo', '🏷️ Consegui nomear a emoção', '💬 Comentei com alguém', '📝 Usei meu plano quando-então'];
 
   var osReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var speechSupported = 'speechSynthesis' in window;
 
   // ---------------------------------------------------------------
+  // Conteúdo conceitual (tela "O que é uma emoção?") — base teórica:
+  // três componentes da emoção (Scherer), tendência de ação (Frijda),
+  // expressões universais (Ekman), regulação como habilidade e não
+  // como supressão (Gross).
+  // ---------------------------------------------------------------
+  var concepts = [
+    {
+      icon: '🧩', title: 'O que é uma emoção?',
+      text: 'Não é "coisa da cabeça" nem fraqueza — é informação rápida. Toda emoção tem três partes que acontecem quase juntas: <strong>uma mudança no corpo</strong> (coração, respiração, tensão), <strong>um sentimento</strong> (o jeito como isso é vivido por dentro) e <strong>uma vontade de agir</strong> específica. Quando você sente antes de "pensar", é essa engrenagem funcionando.'
+    },
+    {
+      icon: '🛡️', title: 'Pra que servem as emoções',
+      text: 'Cada uma das seis emoções básicas existe porque, ao longo da nossa história como espécie, ela resolveu um problema real: fugir de perigo, notar uma perda, defender um limite, se aproximar do que é bom. <strong>Não existe emoção "errada"</strong> — existe emoção incômoda de sentir. O objetivo aqui não é eliminar nenhuma delas, é entender o recado que cada uma traz.'
+    },
+    {
+      icon: '⚡', title: 'Tendência de ação',
+      text: 'Cada emoção vem com um "programa" pronto: um impulso específico do que fazer — o medo empurra pra fugir, a raiva empurra pra enfrentar, o nojo empurra pra afastar. Isso se chama <strong>tendência de ação</strong>. Reconhecer esse impulso não significa obedecer a ele automaticamente — significa ganhar a escolha de segui-lo ou não.'
+    },
+    {
+      icon: '🎛️', title: 'O que é regulação emocional',
+      text: 'Regular uma emoção <strong>não é reprimir</strong> nem "ficar bem" o tempo todo. É um processo de três passos: <strong>perceber</strong> o que está acontecendo no corpo, <strong>nomear</strong> a emoção com precisão, e só então <strong>escolher</strong> a resposta — em vez de reagir no piloto automático. Regular bem não significa nunca sentir raiva ou medo; significa ter mais opções quando eles aparecerem.'
+    },
+    {
+      icon: '👥', title: 'Reconhecer em você e nos outros',
+      text: 'Existem dois radares: um <strong>interno</strong> (interocepção) — os sinais do seu próprio corpo — e um <strong>externo</strong> — expressões faciais e de postura que, segundo o pesquisador Paul Ekman, se repetem de forma parecida em culturas bem diferentes. Treinar os dois radares é a base do que costuma ser chamado de inteligência emocional.'
+    }
+  ];
+
+  // ---------------------------------------------------------------
   // Conteúdo das emoções — linguagem simples e âncoras concretas de
-  // corpo/pensamento. Cada emoção também carrega uma frase-gatilho
+  // corpo/pensamento, mais origem evolutiva, tendência de ação,
+  // sinais visíveis em outras pessoas e uma cena do dia a dia pra
+  // conectar com a realidade. Cada emoção carrega uma frase-gatilho
   // curta usada no plano "quando eu perceber ___".
   // ---------------------------------------------------------------
   var emotions = [
     {
       name: 'Alegria', emoji: '😊', accent: 'joy', trigger: 'uma sensação de leveza no corpo',
       definition: 'Uma sensação boa que aparece quando algo dá certo ou é agradável.',
+      origin: 'Evoluiu porque nos aproxima do que é bom — comida, companhia, segurança. Quem sentia prazer em se conectar e explorar tinha mais chances de sobreviver e prosperar.',
+      actionTendency: ['Dá vontade de se aproximar', 'Compartilhar com alguém', 'Continuar fazendo aquilo'],
       thoughts: ['"Isso é bom."', '"Quero repetir isso."', '"Quero contar pra alguém."'],
       physical: ['Mais energia no corpo', 'Sorriso que vem sem esforço', 'Sensação de leveza'],
+      recognizeOthers: ['Sorriso que chega aos olhos', 'Postura mais aberta e solta', 'Fala mais leve e mais rápida'],
+      scenario: 'Você recebe uma notícia boa e sente vontade de contar pra alguém na mesma hora — é a alegria empurrando você a compartilhar e fortalecer vínculos.',
+      applyPrompt: 'Da próxima vez: nomeie em voz alta e aproveite 10 segundos antes de seguir em frente.',
       healthy: ['Aproveitar o momento', 'Agradecer', 'Compartilhar com alguém de confiança'],
       unhealthy: ['Buscar só prazer rápido o tempo todo', 'Depender da aprovação dos outros para se sentir bem'],
       fn: 'Nos motiva a repetir o que faz bem e fortalece nossos laços com as pessoas.',
@@ -27,8 +66,13 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       name: 'Tristeza', emoji: '😢', accent: 'sad', trigger: 'um nó na garganta',
       definition: 'Aparece quando perdemos algo ou alguém, ou vivemos uma decepção.',
+      origin: 'Evoluiu como resposta à perda — de pessoas, vínculos, recursos. Ela reduz nossa energia pra pedir ajuda e reavaliar o que realmente importa.',
+      actionTendency: ['Dá vontade de se recolher', 'Ficar quieto por um tempo', 'Buscar conforto'],
       thoughts: ['"Sinto falta disso."', '"Isso é difícil."', '"Preciso de um tempo."'],
       physical: ['Peito mais pesado', 'Menos energia', 'Vontade de chorar'],
+      recognizeOthers: ['Cantos da boca caídos', 'Olhar baixo, ombros curvados', 'Fala mais devagar e mais baixa'],
+      scenario: 'Um amigo se muda de cidade e você sente um vazio quando pensa nele — a tristeza está sinalizando o quanto esse vínculo importava.',
+      applyPrompt: 'Da próxima vez: permita-se sentir por alguns minutos antes de tentar "resolver" — a tristeza pede tempo, não solução imediata.',
       healthy: ['Permitir-se sentir', 'Pedir apoio', 'Dar tempo pra si mesmo'],
       unhealthy: ['Esconder o que sente', 'Se isolar completamente', 'Ficar remoendo sem buscar ajuda'],
       fn: 'Ajuda a processar perdas e avisa às pessoas ao redor que precisamos de cuidado.',
@@ -37,8 +81,13 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       name: 'Raiva', emoji: '😠', accent: 'anger', trigger: 'o coração acelerado e músculos tensos',
       definition: 'Surge quando algo parece injusto, quando somos frustrados ou nos sentimos ameaçados.',
+      origin: 'Evoluiu para nos defender quando algo importante é violado — nossos limites, nosso espaço, nossa dignidade.',
+      actionTendency: ['Dá vontade de enfrentar', 'Corrigir a injustiça', 'Se impor'],
       thoughts: ['"Isso é injusto."', '"Não vou aceitar isso."', '"Preciso me defender."'],
       physical: ['Coração acelera', 'Músculos tensos', 'Sensação de calor'],
+      recognizeOthers: ['Sobrancelhas franzidas, olhar fixo', 'Mandíbula tensa, lábios apertados', 'Gestos mais bruscos'],
+      scenario: 'Alguém fura sua fila depois de você esperar 40 minutos — a raiva é o sinal de que um limite foi ultrapassado.',
+      applyPrompt: 'Da próxima vez: nomeie "estou com raiva" antes de agir — isso já cria uma pausa entre sentir e fazer.',
       healthy: ['Reconhecer o que sente', 'Falar de forma direta e respeitosa', 'Colocar limites'],
       unhealthy: ['Explodir sem pensar', 'Agredir com palavras ou ações', 'Engolir tudo por dentro'],
       fn: 'Ajuda a enfrentar obstáculos e proteger o que é importante pra gente.',
@@ -47,8 +96,13 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       name: 'Medo', emoji: '😨', accent: 'fear', trigger: 'o coração disparado e a respiração rápida',
       definition: 'Aparece quando algo parece uma ameaça à nossa segurança, física ou emocional.',
+      origin: 'Evoluiu para nos manter vivos diante de ameaças reais — é um dos sistemas mais antigos e mais rápidos do cérebro.',
+      actionTendency: ['Dá vontade de fugir', 'Se esconder', 'Congelar no lugar'],
       thoughts: ['"Isso é perigoso."', '"Algo ruim pode acontecer."', '"Preciso me proteger."'],
       physical: ['Coração dispara', 'Pupilas dilatam', 'Respiração rápida'],
+      recognizeOthers: ['Olhos arregalados, sobrancelhas erguidas', 'Corpo encolhido ou tenso', 'Voz mais aguda ou trêmula'],
+      scenario: 'Um carro freia bruscamente perto de você — o coração dispara antes mesmo de "pensar" no perigo. É o medo te protegendo.',
+      applyPrompt: 'Da próxima vez: pergunte-se "esse perigo é real e imediato, ou é só uma possibilidade?" — ajuda a calibrar a resposta.',
       healthy: ['Avaliar o perigo com calma', 'Se proteger quando necessário', 'Encarar aos poucos o que assusta'],
       unhealthy: ['Evitar tudo que dá medo', 'Entrar em pânico', 'Viver preocupado com coisas pouco prováveis'],
       fn: 'Nos protege de perigos reais, preparando o corpo para agir rápido.',
@@ -57,8 +111,13 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       name: 'Nojo', emoji: '🤢', accent: 'disgust', trigger: 'vontade de me afastar de algo ou alguém',
       definition: 'Uma reação de rejeição a algo que parece contaminado, nocivo ou que fere nossos valores.',
+      origin: 'Evoluiu para nos afastar do que pode contaminar ou adoecer — comida estragada, doenças e, mais tarde, também violações morais.',
+      actionTendency: ['Dá vontade de se afastar', 'Rejeitar', 'Expelir ou evitar contato'],
       thoughts: ['"Isso é repulsivo."', '"Preciso me afastar."', '"Isso pode me fazer mal."'],
       physical: ['Enjoo', 'Nariz franzido', 'Vontade de se afastar'],
+      recognizeOthers: ['Nariz enrugado, lábio superior levantado', 'Cabeça ou corpo virado pra longe', 'Expressão de repulsa no rosto'],
+      scenario: 'Você abre a geladeira e sente um cheiro estranho — o nojo faz você recuar antes de qualquer risco real.',
+      applyPrompt: 'Da próxima vez: repare se o nojo é sobre algo concreto (comida, cheiro) ou um julgamento moral — parecem iguais, mas pedem respostas diferentes.',
       healthy: ['Reconhecer o incômodo', 'Se afastar quando faz sentido', 'Questionar reações exageradas'],
       unhealthy: ['Rejeitar pessoas ou situações sem refletir', 'Julgar com base só numa reação forte'],
       fn: 'Nos protege de coisas que podem nos fazer mal, como comida estragada ou situações arriscadas.',
@@ -67,8 +126,13 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       name: 'Surpresa', emoji: '😲', accent: 'surprise', trigger: 'uma reação rápida a algo inesperado',
       definition: 'Uma reação rápida a algo inesperado, que interrompe o que estávamos pensando ou fazendo.',
+      origin: 'Evoluiu pra interromper o que estávamos fazendo e redirecionar toda a atenção pro que é novo — antes mesmo de sabermos se é bom ou ruim.',
+      actionTendency: ['Dá vontade de parar', 'Olhar e prestar atenção', 'Entender rápido o que aconteceu'],
       thoughts: ['"Não esperava por isso!"', '"O que está acontecendo?"', '"Preciso entender rápido."'],
       physical: ['Sobrancelhas sobem', 'Olhos arregalam', 'Respiração muda de repente'],
+      recognizeOthers: ['Sobrancelhas erguidas, olhos arregalados', 'Boca aberta', 'Corpo momentaneamente parado'],
+      scenario: 'Alguém aparece de surpresa numa festa — antes de sentir alegria ou susto, o corpo já reagiu à surpresa em si.',
+      applyPrompt: 'Da próxima vez: dê um segundo pra deixar a surpresa passar antes de decidir como reagir ao que veio depois dela.',
       healthy: ['Ficar aberto ao novo', 'Se adaptar com calma à mudança'],
       unhealthy: ['Travar diante do inesperado', 'Reagir de forma exagerada a pequenas mudanças'],
       fn: 'Ajuda a redirecionar rápido nossa atenção para o que é novo, preparando uma resposta.',
@@ -80,17 +144,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var gameTypes = [
     { question: 'Combine cada emoção com sua definição', property: 'definition', label: 'Definições', purpose: 'Praticar o conceito geral de cada emoção.' },
+    { question: 'Combine cada emoção com as sensações no corpo (em você)', property: 'physical', label: 'Sensações no corpo', purpose: 'Treinar a ligação entre sensação no corpo e nome da emoção — a base da granularidade emocional.' },
+    { question: 'Combine cada emoção com os sinais visíveis em outras pessoas', property: 'recognizeOthers', label: 'Reconhecer nos outros', purpose: 'Praticar reconhecer essa emoção em outras pessoas, pela expressão e pela postura.' },
+    { question: 'Combine cada emoção com a vontade de agir que ela desperta', property: 'actionTendency', label: 'Tendência de ação', purpose: 'Perceber o impulso específico de cada emoção — o primeiro passo pra escolher se vai segui-lo.' },
+    { question: 'Combine cada emoção com uma cena do dia a dia', property: 'scenario', label: 'Aplicar na vida real', purpose: 'Conectar cada emoção com situações reais, pra reconhecer também fora do jogo.' },
     { question: 'Combine cada emoção com os pensamentos comuns', property: 'thoughts', label: 'Pensamentos', purpose: 'Reconhecer os pensamentos que costumam acompanhar cada emoção.' },
-    { question: 'Combine cada emoção com as sensações no corpo', property: 'physical', label: 'Sensações físicas', purpose: 'Treinar a ligação entre sensação no corpo e nome da emoção — a base da granularidade emocional.' },
-    { question: 'Combine cada emoção com formas saudáveis de lidar', property: 'healthy', label: 'Formas saudáveis', purpose: 'Lembrar de respostas que ajudam quando essa emoção aparecer.' },
-    { question: 'Combine cada emoção com sua função', property: 'fn', label: 'Função', purpose: 'Entender por que essa emoção existe e para que serve.' },
-    { question: 'Combine cada emoção com sua base no cérebro', property: 'science', label: 'Curiosidade científica', purpose: 'Uma camada extra, se você tiver curiosidade sobre o cérebro.' }
+    { question: 'Combine cada emoção com formas saudáveis de lidar', property: 'healthy', label: 'Formas saudáveis', purpose: 'Lembrar de respostas que ajudam quando essa emoção aparecer.' }
   ];
 
   var feedbackMessages = {
     correct: ['Isso mesmo! 🎉', 'Muito bem! ✨', 'Combinação certa! 👏', 'Você está indo bem! 🌟'],
     incorrect: ['Não foi essa. Tente de novo. 💪', 'Quase lá — olhe com calma. 🔍', 'Sem problema, tente outra vez. 🌱']
   };
+
+  function weekStart(dateObj) {
+    var d = dateObj ? new Date(dateObj) : new Date();
+    var day = (d.getDay() + 6) % 7; // segunda = 0
+    d.setDate(d.getDate() - day);
+    return d.toISOString().slice(0, 10);
+  }
 
   function propToText(val) { return Array.isArray(val) ? val.join(' ') : val; }
   function li(text) { return '<li>' + text + '</li>'; }
@@ -116,11 +188,24 @@ document.addEventListener('DOMContentLoaded', function () {
         reducedMotion: p.reducedMotion === true,
         largeText: p.largeText === true,
         highContrast: p.highContrast === true,
-        audioEnabled: p.audioEnabled !== false
+        audioEnabled: p.audioEnabled !== false,
+        profile: p.profile === 'body-first' ? 'body-first' : 'general'
       };
     } catch (e) {
-      return { reducedMotion: false, largeText: false, highContrast: false, audioEnabled: true };
+      return { reducedMotion: false, largeText: false, highContrast: false, audioEnabled: true, profile: 'general' };
     }
+  }
+
+  // Tailoring (Murta/GEPPSVida): a ordem dos 6 desafios muda conforme o
+  // perfil escolhido pela pessoa. "Corpo primeiro" começa pelas sensações
+  // físicas antes dos rótulos — ajuda quem tem mais dificuldade em
+  // perceber o que sente antes de nomear.
+  function buildGameOrder(profile) {
+    if (profile === 'body-first') {
+      var order = ['physical', 'recognizeOthers', 'definition', 'actionTendency', 'scenario', 'thoughts', 'healthy'];
+      return order.map(function (prop) { return gameTypes.filter(function (g) { return g.property === prop; })[0]; });
+    }
+    return gameTypes.slice();
   }
 
   function savePrefs() {
@@ -150,7 +235,8 @@ document.addEventListener('DOMContentLoaded', function () {
     selfAfter: [null, null],
     gameBreakdown: [],
     vocabWords: {},
-    ifThenPlan: ''
+    ifThenPlan: '',
+    orderedGameTypes: gameTypes.slice()
   };
 
   var totalSteps = emotions.length + gameTypes.length;
@@ -164,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
     start: document.getElementById('scr-start'),
     prefs: document.getElementById('scr-prefs'),
     check: document.getElementById('scr-check'),
+    concept: document.getElementById('scr-concept'),
     learning: document.getElementById('scr-learning'),
     game: document.getElementById('scr-game'),
     ifthen: document.getElementById('scr-ifthen'),
@@ -183,12 +270,23 @@ document.addEventListener('DOMContentLoaded', function () {
     prefLargeText: document.getElementById('pref-large-text'),
     prefHighContrast: document.getElementById('pref-high-contrast'),
     prefAudio: document.getElementById('pref-audio'),
+    profileGeneral: document.getElementById('profile-general'),
+    profileBodyFirst: document.getElementById('profile-body-first'),
+
+    doseCard: document.getElementById('dose-card'),
+    doseTags: document.getElementById('dose-tags'),
+    doseText: document.getElementById('dose-text'),
+    doseSaveBtn: document.getElementById('dose-save-btn'),
+    doseSkipBtn: document.getElementById('dose-skip-btn'),
 
     goCheckBtn: document.getElementById('go-check-btn'),
     skipCheckBtn: document.getElementById('skip-check-btn'),
     checkContinueBtn: document.getElementById('check-continue-btn'),
     checkTitle: document.getElementById('check-title'),
     checkQuestions: document.getElementById('check-questions'),
+
+    conceptList: document.getElementById('concept-list'),
+    conceptContinueBtn: document.getElementById('concept-continue-btn'),
 
     prevEmotion: document.getElementById('prev-emotion'),
     nextEmotion: document.getElementById('next-emotion'),
@@ -255,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function updateNav() {
     var isStart = state.screen === 'start';
     el.backBtn.disabled = isStart;
-    el.skipBtn.classList.toggle('hidden', !(state.screen === 'learning' || state.screen === 'game'));
+    el.skipBtn.classList.toggle('hidden', !(state.screen === 'concept' || state.screen === 'learning' || state.screen === 'game'));
     el.dataBtn.classList.toggle('hidden', state.screen === 'data');
   }
 
@@ -298,9 +396,69 @@ document.addEventListener('DOMContentLoaded', function () {
     if (progress && (progress.screen === 'learning' || progress.screen === 'game')) {
       el.resumeBanner.classList.remove('hidden');
       el.resumeBanner._data = progress;
-    } else {
-      el.resumeBanner.classList.add('hidden');
+      return true;
     }
+    el.resumeBanner.classList.add('hidden');
+    return false;
+  }
+
+  // ---------------------------------------------------------------
+  // Dose Cultivada: check-in semanal leve e opcional, só aparece pra
+  // quem já jogou pelo menos uma vez. Nunca bloqueia, nunca cobra —
+  // "dispensar essa semana" é uma opção tão válida quanto registrar.
+  // ---------------------------------------------------------------
+  function loadDose() {
+    try {
+      var raw = localStorage.getItem(DOSE_KEY);
+      return raw ? JSON.parse(raw) : { records: [], skipWeek: null };
+    } catch (e) { return { records: [], skipWeek: null }; }
+  }
+
+  function saveDose(dose) {
+    try { localStorage.setItem(DOSE_KEY, JSON.stringify(dose)); } catch (e) { /* indisponível */ }
+  }
+
+  function renderDoseCard() {
+    var ws = weekStart();
+    var dose = loadDose();
+    var alreadyLogged = dose.records.some(function (r) { return r.weekStart === ws; });
+    var hasHistory = loadSessions().length > 0;
+    if (!hasHistory || alreadyLogged || dose.skipWeek === ws) {
+      el.doseCard.classList.add('hidden');
+      return;
+    }
+    el.doseTags.innerHTML = DOSE_TAGS.map(function (t) {
+      return '<button type="button" class="chip" data-tag="' + t.replace(/"/g, '&quot;') + '" aria-pressed="false">' + t + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.doseTags.querySelectorAll('.chip'), function (chip) {
+      chip.addEventListener('click', function () {
+        chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      });
+    });
+    el.doseText.value = '';
+    el.doseCard.classList.remove('hidden');
+  }
+
+  el.doseSaveBtn.addEventListener('click', function () {
+    var tags = Array.prototype.filter.call(el.doseTags.querySelectorAll('.chip'), function (c) { return c.getAttribute('aria-pressed') === 'true'; }).map(function (c) { return c.dataset.tag; });
+    var text = el.doseText.value.trim();
+    if (!tags.length && !text) { el.doseCard.classList.add('hidden'); return; }
+    var dose = loadDose();
+    dose.records.push({ ts: Date.now(), date: new Date().toISOString(), weekStart: weekStart(), tags: tags, text: text });
+    saveDose(dose);
+    el.doseCard.classList.add('hidden');
+  });
+
+  el.doseSkipBtn.addEventListener('click', function () {
+    var dose = loadDose();
+    dose.skipWeek = weekStart();
+    saveDose(dose);
+    el.doseCard.classList.add('hidden');
+  });
+
+  function refreshStartScreen() {
+    var resuming = checkForResume();
+    if (!resuming) renderDoseCard(); else el.doseCard.classList.add('hidden');
   }
 
   el.resumeBtn.addEventListener('click', function () {
@@ -316,6 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
     el.score.textContent = state.score;
     updateOverallProgress();
     if (progress.screen === 'game') {
+      state.orderedGameTypes = buildGameOrder(prefs.profile);
       showScreen('game');
       setupGame(state.gameIndex);
     } else {
@@ -337,6 +496,8 @@ document.addEventListener('DOMContentLoaded', function () {
     el.prefLargeText.checked = prefs.largeText;
     el.prefHighContrast.checked = prefs.highContrast;
     el.prefAudio.checked = prefs.audioEnabled;
+    el.profileGeneral.setAttribute('aria-pressed', String(prefs.profile === 'general'));
+    el.profileBodyFirst.setAttribute('aria-pressed', String(prefs.profile === 'body-first'));
   }
 
   el.prefsBtn.addEventListener('click', function () { renderPrefsScreen(); showScreen('prefs'); });
@@ -347,10 +508,14 @@ document.addEventListener('DOMContentLoaded', function () {
   el.prefHighContrast.addEventListener('change', function () { prefs.highContrast = this.checked; savePrefs(); applyPrefs(); });
   el.prefAudio.addEventListener('change', function () { prefs.audioEnabled = this.checked; savePrefs(); if (state.screen === 'learning') showEmotion(state.emotionIndex); });
 
+  el.profileGeneral.addEventListener('click', function () { prefs.profile = 'general'; savePrefs(); renderPrefsScreen(); });
+  el.profileBodyFirst.addEventListener('click', function () { prefs.profile = 'body-first'; savePrefs(); renderPrefsScreen(); });
+
   // ---------------------------------------------------------------
   // Tela inicial → autoavaliação opcional
   // ---------------------------------------------------------------
   el.startBtn.addEventListener('click', function () {
+    resetSession();
     clearProgress();
     renderCheck('before');
     showScreen('check');
@@ -394,14 +559,25 @@ document.addEventListener('DOMContentLoaded', function () {
   el.checkContinueBtn.addEventListener('click', proceedFromCheck);
   el.skipCheckBtn.addEventListener('click', proceedFromCheck);
 
+  function renderConceptScreen() {
+    el.conceptList.innerHTML = concepts.map(function (c) {
+      return '<div class="concept-card"><div class="concept-icon" aria-hidden="true">' + c.icon + '</div><div><h3>' + c.title + '</h3><p>' + c.text + '</p></div></div>';
+    }).join('');
+  }
+
+  el.conceptContinueBtn.addEventListener('click', function () {
+    showScreen('learning');
+    showEmotion(state.emotionIndex);
+    completedSteps = 0;
+    updateOverallProgress();
+    saveProgress();
+  });
+
   function proceedFromCheck() {
     var phase = el.checkContinueBtn.dataset.phase;
     if (phase === 'before') {
-      showScreen('learning');
-      showEmotion(state.emotionIndex);
-      completedSteps = 0;
-      updateOverallProgress();
-      saveProgress();
+      renderConceptScreen();
+      showScreen('concept');
     } else {
       showScreen('ifthen');
     }
@@ -416,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function buildSpeechText(e) {
-    return e.name + '. ' + e.definition + ' No corpo, pode parecer: ' + e.physical.join(', ') + '. Pensamentos comuns: ' + e.thoughts.join(' ');
+    return e.name + '. ' + e.definition + ' No corpo, em você, pode parecer: ' + e.physical.join(', ') + '. Nos outros, dá pra notar: ' + e.recognizeOthers.join(', ') + '. Dá vontade de: ' + e.actionTendency.join(', ');
   }
 
   function showEmotion(index) {
@@ -441,13 +617,19 @@ document.addEventListener('DOMContentLoaded', function () {
             listenBtnHtml +
           '</div>' +
           '<div class="emotion-block"><h4>O que é</h4><p>' + e.definition + '</p></div>' +
+          '<div class="emotion-block"><h4>De onde vem</h4><p>' + e.origin + '</p></div>' +
+          '<div class="scenario-box"><strong>Imagine que...</strong> ' + e.scenario + '</div>' +
+          '<div class="emotion-grid-2">' +
+            '<div class="emotion-block"><h4>No corpo, em você</h4><ul>' + e.physical.map(li).join('') + '</ul></div>' +
+            '<div class="emotion-block"><h4>Como reconhecer nos outros</h4><ul>' + e.recognizeOthers.map(li).join('') + '</ul></div>' +
+          '</div>' +
+          '<div class="emotion-block"><h4>O que dá vontade de fazer</h4><ul>' + e.actionTendency.map(li).join('') + '</ul></div>' +
           '<div class="emotion-block"><h4>Pensamentos comuns</h4><ul>' + e.thoughts.map(li).join('') + '</ul></div>' +
-          '<div class="emotion-block"><h4>No corpo, pode parecer</h4><ul>' + e.physical.map(li).join('') + '</ul></div>' +
           '<div class="emotion-grid-2">' +
             '<div class="emotion-block"><h4>Isso ajuda</h4><ul>' + e.healthy.map(li).join('') + '</ul></div>' +
             '<div class="emotion-block"><h4>Isso pode atrapalhar</h4><ul>' + e.unhealthy.map(li).join('') + '</ul></div>' +
           '</div>' +
-          '<div class="emotion-block"><h4>Pra que serve</h4><p>' + e.fn + '</p></div>' +
+          '<div class="apply-tip">🎯 <strong>Pra aplicar:</strong> ' + e.applyPrompt + '</div>' +
           '<button type="button" class="science-toggle" id="science-toggle" aria-expanded="false">Quer saber mais? (camada científica)</button>' +
           '<p class="science-note hidden" id="science-note"><strong>Curiosidade:</strong> ' + e.science + '</p>' +
           '<div class="vocab-row">' +
@@ -519,6 +701,7 @@ document.addEventListener('DOMContentLoaded', function () {
     stopSpeech();
     completedSteps = emotions.length;
     updateOverallProgress();
+    state.orderedGameTypes = buildGameOrder(prefs.profile);
     showScreen('game');
     setupGame(state.gameIndex);
   }
@@ -527,12 +710,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // Jogo de associação
   // ---------------------------------------------------------------
   function updateGameProgress() {
-    el.gameProgress.style.width = (((state.gameIndex + 1) / gameTypes.length) * 100) + '%';
-    el.progressText.textContent = 'Desafio ' + (state.gameIndex + 1) + '/' + gameTypes.length;
+    el.gameProgress.style.width = (((state.gameIndex + 1) / state.orderedGameTypes.length) * 100) + '%';
+    el.progressText.textContent = 'Desafio ' + (state.gameIndex + 1) + '/' + state.orderedGameTypes.length;
   }
 
   function setupGame(index) {
-    var gt = gameTypes[index];
+    var gt = state.orderedGameTypes[index];
     el.gameQuestion.textContent = gt.question;
     el.roundPurpose.textContent = 'Por que este desafio: ' + gt.purpose;
     el.nextGame.classList.add('hidden');
@@ -696,7 +879,13 @@ document.addEventListener('DOMContentLoaded', function () {
   // Pular etapa
   // ---------------------------------------------------------------
   el.skipBtn.addEventListener('click', function () {
-    if (state.screen === 'game') {
+    if (state.screen === 'concept') {
+      showScreen('learning');
+      showEmotion(state.emotionIndex);
+      completedSteps = 0;
+      updateOverallProgress();
+      saveProgress();
+    } else if (state.screen === 'game') {
       if (state.gameIndex < gameTypes.length - 1) {
         state.gameIndex++;
         completedSteps++;
@@ -776,7 +965,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showScreen('result');
   }
 
-  el.restartBtn.addEventListener('click', function () {
+  function resetSession() {
     stopSpeech();
     state.emotionIndex = 0;
     state.gameIndex = 0;
@@ -788,11 +977,16 @@ document.addEventListener('DOMContentLoaded', function () {
     state.gameBreakdown = [];
     state.vocabWords = {};
     state.ifThenPlan = '';
+    state.orderedGameTypes = gameTypes.slice();
     completedSteps = 0;
     el.score.textContent = 0;
     updateOverallProgress();
+  }
+
+  el.restartBtn.addEventListener('click', function () {
+    resetSession();
     clearProgress();
-    checkForResume();
+    refreshStartScreen();
     showScreen('start');
   });
 
@@ -803,7 +997,8 @@ document.addEventListener('DOMContentLoaded', function () {
     switch (state.screen) {
       case 'prefs': showScreen('start'); break;
       case 'check': showScreen('start'); break;
-      case 'learning': showScreen('start'); break;
+      case 'concept': showScreen('start'); break;
+      case 'learning': showScreen('concept'); break;
       case 'game': showScreen('learning'); break;
       case 'ifthen': showScreen('game'); break;
       case 'result': showScreen('ifthen'); break;
@@ -811,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  el.homeBtn.addEventListener('click', function () { stopSpeech(); checkForResume(); showScreen('start'); });
+  el.homeBtn.addEventListener('click', function () { stopSpeech(); refreshStartScreen(); showScreen('start'); });
 
   el.dataBtn.addEventListener('click', function () { renderDataScreen(); showScreen('data'); });
   document.getElementById('data-back-btn').addEventListener('click', function () { showScreen('start'); });
@@ -914,8 +1109,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return '<div style="border:1.5px solid #E5E0D8;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;break-inside:avoid;">' +
         '<div style="font-size:28px">' + e.emoji + '</div>' +
         '<div><strong>' + e.name + '</strong><br>' +
-        '<span style="font-size:13px;color:#6B6863">No corpo: ' + e.physical[0] + '</span><br>' +
-        '<span style="font-size:13px;color:#6B6863">Pode pensar: ' + e.thoughts[0] + '</span></div>' +
+        '<span style="font-size:13px;color:#6B6863">Em você: ' + e.physical[0] + '</span><br>' +
+        '<span style="font-size:13px;color:#6B6863">Nos outros: ' + e.recognizeOthers[0] + '</span><br>' +
+        '<span style="font-size:13px;color:#6B6863">Dá vontade de: ' + e.actionTendency[0] + '</span></div>' +
         '</div>';
     }).join('');
 
@@ -938,5 +1134,5 @@ document.addEventListener('DOMContentLoaded', function () {
   applyPrefs();
   updateNav();
   updateOverallProgress();
-  checkForResume();
+  refreshStartScreen();
 });

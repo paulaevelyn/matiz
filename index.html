@@ -52,6 +52,17 @@
         </div>
       </div>
 
+      <div id="dose-card" class="card hidden" style="max-width:640px;margin:0 auto 20px;text-align:left">
+        <h3 style="margin-bottom:6px">Sua prática essa semana (opcional)</h3>
+        <p style="color:var(--muted);margin-top:0">Sem problema nenhum se não rolou nada — isso aqui é só pra quem quiser registrar.</p>
+        <div id="dose-tags" class="chip-row"></div>
+        <textarea id="dose-text" class="plan-input" style="min-height:60px" placeholder="Quer contar algo a mais? (opcional)"></textarea>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px">
+          <button id="dose-save-btn" class="btn-cta secondary" style="font-size:.95rem;padding:10px 22px">Registrar</button>
+          <button id="dose-skip-btn" class="skip-check">Agora não, só essa semana</button>
+        </div>
+      </div>
+
       <div class="card" style="max-width:640px;margin:0 auto;text-align:left">
         <div style="text-align:center;margin-bottom:16px">
           <span class="time-badge">⏱ 10–15 minutos, sem pressa</span>
@@ -111,6 +122,15 @@
         <label class="switch"><input type="checkbox" id="pref-audio"><span class="switch-track"></span><span class="switch-thumb"></span></label>
       </div>
 
+      <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--line)">
+        <div class="pref-label" style="margin-bottom:4px">Como você aprende melhor?</div>
+        <div class="pref-desc" style="margin-bottom:10px">Isso muda a ordem dos desafios do jogo — pode trocar quando quiser.</div>
+        <div class="scale-options" role="radiogroup" aria-label="Como você aprende melhor">
+          <button type="button" id="profile-general" class="scale-opt" style="flex:1 1 45%" role="radio" aria-pressed="true">Sem preferência — ordem padrão</button>
+          <button type="button" id="profile-body-first" class="scale-opt" style="flex:1 1 45%" role="radio" aria-pressed="false">Prefiro começar pelas sensações no corpo</button>
+        </div>
+      </div>
+
       <div style="margin-top:20px">
         <button id="prefs-done-btn" class="btn-cta" style="font-size:1rem;padding:12px 28px">Pronto</button>
       </div>
@@ -127,6 +147,18 @@
         <button id="check-continue-btn" class="btn-cta" style="font-size:1rem;padding:12px 28px">Continuar</button>
         <button id="skip-check-btn" class="skip-check">Pular essa parte</button>
       </div>
+    </div>
+  </section>
+
+  <!-- CONCEITOS -->
+  <section id="scr-concept" class="hidden fade-in">
+    <div class="hero">
+      <h2>Antes das 6 emoções: o que é uma emoção?</h2>
+      <p class="lead">Cinco ideias curtas que vão te ajudar a entender por que o resto do jogo funciona do jeito que funciona.</p>
+    </div>
+    <div class="card" style="max-width:680px;margin:0 auto" id="concept-list"></div>
+    <div style="text-align:center;margin-top:24px">
+      <button id="concept-continue-btn" class="btn-cta">Entendi, vamos às emoções →</button>
     </div>
   </section>
 
@@ -154,7 +186,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
       <div class="progress-track" style="margin-bottom:0"><div id="game-progress" class="progress-fill" style="width:0%;background:var(--accent)"></div></div>
-      <span id="progress-text" style="white-space:nowrap;font-weight:600;font-size:.9rem">Desafio 1/6</span>
+      <span id="progress-text" style="white-space:nowrap;font-weight:600;font-size:.9rem">Desafio 1/7</span>
     </div>
     <p id="round-purpose" class="round-purpose"></p>
 
