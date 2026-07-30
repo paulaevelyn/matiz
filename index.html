@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matiz — cada sentimento tem seu tom</title>
+  <meta name="description" content="Um recurso psicoeducativo para reconhecer e nomear as seis emoções básicas com precisão, pensado para públicos diversos, incluindo pessoas com alexitimia e neurodivergentes.">
+  <link rel="icon" href="assets/matiz-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .accent-joy { background: #FBF0D9; border-color: #E8C468; color: #8A6512; }
+    .accent-sad { background: #E1EBF5; border-color: #7FA8D1; color: #3B6EA5; }
+    .accent-anger { background: #F7E1DF; border-color: #D97B72; color: #B23B32; }
+    .accent-fear { background: #EBE3F5; border-color: #A98FCB; color: #6A4A96; }
+    .accent-disgust { background: #DEEFE1; border-color: #7CB88C; color: #3D7A4E; }
+    .accent-surprise { background: #F8E7D2; border-color: #E8A85C; color: #C1701F; }
+    .accent-text-joy { color: #8A6512; } .accent-text-sad { color: #3B6EA5; } .accent-text-anger { color: #B23B32; }
+    .accent-text-fear { color: #6A4A96; } .accent-text-disgust { color: #3D7A4E; } .accent-text-surprise { color: #C1701F; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <img src="assets/matiz-logo.svg" alt="" width="32" height="32">
+    <span class="nav-brand-name">Matiz</span>
+  </div>
+  <div class="nav-actions">
+    <button id="skip-btn" class="nav-btn hidden">Pular etapa</button>
+    <button id="prefs-btn" class="nav-btn">⚙️ Preferências</button>
+    <button id="data-btn" class="nav-btn">Meus dados</button>
+    <button id="back-btn" class="nav-btn">← Voltar</button>
+    <button id="home-btn" class="nav-btn primary">Início</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- INÍCIO -->
+  <section id="scr-start" class="fade-in">
+    <div class="hero">
+      <img class="hero-logo" src="assets/matiz-logo.svg" alt="Matiz">
+      <h1>Matiz</h1>
+      <p class="tagline">cada sentimento tem seu tom</p>
+      <p class="lead">Um espaço para aprender a reconhecer e nomear o que sentimos, com mais precisão. Vamos conhecer as seis emoções básicas e praticar em jogos curtos, no seu ritmo.</p>
+
+      <div id="resume-banner" class="card hidden" style="max-width:640px;margin:0 auto 20px;text-align:left">
+        <p style="margin:0 0 12px"><strong>Você tem uma sessão em andamento.</strong> Sem problema nenhum ter pausado — quer continuar de onde parou ou começar de novo?</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button id="resume-btn" class="btn-cta" style="font-size:1rem;padding:12px 24px">Continuar de onde parei</button>
+          <button id="fresh-start-btn" class="btn-cta secondary" style="font-size:1rem;padding:12px 24px">Começar do zero</button>
+        </div>
+      </div>
+
+      <div class="card" style="max-width:640px;margin:0 auto;text-align:left">
+        <div style="text-align:center;margin-bottom:16px">
+          <span class="time-badge">⏱ 10–15 minutos, sem pressa</span>
+        </div>
+
+        <div class="rationale-box">
+          <h3>Por que nomear com precisão importa</h3>
+          <p style="margin:0">Pesquisas sobre <strong>granularidade emocional</strong> (Lisa Feldman Barrett) mostram que nomear o que sentimos com precisão — não só "bem" ou "mal" — ajuda a regular melhor as emoções. É como o paladar: quem só reconhece "doce e salgado" sente menos nuances do que quem reconhece sabores específicos. Este jogo existe pra ampliar esse vocabulário.</p>
+        </div>
+
+        <div class="about-list">
+          <div class="about-item">
+            <div class="about-icon" aria-hidden="true">🧭</div>
+            <p>Baseado nas seis emoções básicas descritas por Paul Ekman, com linguagem simples e exemplos concretos de corpo e pensamento — sem exigir vocabulário técnico.</p>
+          </div>
+          <div class="about-item">
+            <div class="about-icon" aria-hidden="true">🧩</div>
+            <p>Você vai <strong>ler sobre cada emoção</strong> e depois <strong>praticar</strong> em jogos de associação, no seu próprio ritmo — sem cronômetro, sem penalidade por errar, e você pode pausar e continuar depois.</p>
+          </div>
+          <div class="about-item">
+            <div class="about-icon" aria-hidden="true">🌐</div>
+            <p>Feito para públicos diversos — incluindo pessoas neurodivergentes e pessoas com <strong>alexitimia</strong> (dificuldade em identificar ou descrever emoções). Ajuste texto, contraste, movimento e narração em Preferências, a qualquer momento.</p>
+          </div>
+        </div>
+
+        <div class="disclaimer-box">
+          Este é um recurso <strong>psicoeducativo</strong>, não um teste ou diagnóstico. Não existe forma "certa" de sentir. Ele complementa, mas não substitui, o acompanhamento com um profissional de psicologia.
+        </div>
+      </div>
+
+      <div style="margin-top:28px">
+        <button id="start-btn" class="btn-cta">Começar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREFERÊNCIAS -->
+  <section id="scr-prefs" class="hidden fade-in">
+    <div class="card" style="max-width:640px;margin:0 auto">
+      <h2>Preferências</h2>
+      <p style="color:var(--muted)">Ajustes que ficam salvos neste dispositivo, sempre que você quiser mudar.</p>
+
+      <div class="pref-row">
+        <div><div class="pref-label">Reduzir movimento</div><div class="pref-desc">Menos animações (confete, transições, "tremidas" de erro).</div></div>
+        <label class="switch"><input type="checkbox" id="pref-reduced-motion"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+      </div>
+      <div class="pref-row">
+        <div><div class="pref-label">Texto maior</div><div class="pref-desc">Aumenta o tamanho da fonte em todo o app.</div></div>
+        <label class="switch"><input type="checkbox" id="pref-large-text"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+      </div>
+      <div class="pref-row">
+        <div><div class="pref-label">Alto contraste</div><div class="pref-desc">Cores mais fortes, fundo branco, texto preto.</div></div>
+        <label class="switch"><input type="checkbox" id="pref-high-contrast"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+      </div>
+      <div class="pref-row">
+        <div><div class="pref-label">Narração em áudio</div><div class="pref-desc">Mostra um botão "🔊 Ouvir" em cada emoção (usa a voz do seu navegador).</div></div>
+        <label class="switch"><input type="checkbox" id="pref-audio"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+      </div>
+
+      <div style="margin-top:20px">
+        <button id="prefs-done-btn" class="btn-cta" style="font-size:1rem;padding:12px 28px">Pronto</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTOAVALIAÇÃO (opcional, antes e depois) -->
+  <section id="scr-check" class="hidden fade-in">
+    <div class="card" style="max-width:640px;margin:0 auto">
+      <h2 id="check-title">Antes de começar (opcional)</h2>
+      <p style="color:var(--muted)">Essas duas perguntas são só para você perceber sua própria evolução. Não é um instrumento validado nem um diagnóstico — e você pode pular sem problema.</p>
+      <div id="check-questions"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
+        <button id="check-continue-btn" class="btn-cta" style="font-size:1rem;padding:12px 28px">Continuar</button>
+        <button id="skip-check-btn" class="skip-check">Pular essa parte</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APRENDIZADO -->
+  <section id="scr-learning" class="hidden fade-in">
+    <div class="section-header">
+      <h2>Conhecendo as emoções</h2>
+      <div style="display:flex;gap:8px">
+        <button id="prev-emotion" class="nav-btn">← Anterior</button>
+        <button id="next-emotion" class="nav-btn primary">Próximo →</button>
+      </div>
+    </div>
+    <div class="progress-track"><div id="learning-progress" class="progress-fill" style="width:16.67%"></div></div>
+    <div id="emotion-content" class="card"></div>
+    <div style="text-align:center;margin-top:20px">
+      <button id="go-to-game" class="btn-cta hidden" style="font-size:1rem">Vamos praticar →</button>
+    </div>
+  </section>
+
+  <!-- JOGO -->
+  <section id="scr-game" class="hidden fade-in">
+    <div class="section-header">
+      <h2>Jogo de associação</h2>
+      <span class="score-pill">Pontuação: <span id="score">0</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+      <div class="progress-track" style="margin-bottom:0"><div id="game-progress" class="progress-fill" style="width:0%;background:var(--accent)"></div></div>
+      <span id="progress-text" style="white-space:nowrap;font-weight:600;font-size:.9rem">Desafio 1/6</span>
+    </div>
+    <p id="round-purpose" class="round-purpose"></p>
+
+    <div class="instructions">
+      <strong>Como jogar:</strong>
+      <ol>
+        <li>Toque numa <strong>emoção</strong> na coluna da esquerda.</li>
+        <li>Depois toque na <strong>descrição correspondente</strong>, na coluna da direita.</li>
+        <li>Se acertar, ela fica marcada com ✓. Se errar, tente outra vez — sem pressa.</li>
+      </ol>
+    </div>
+
+    <div class="card" style="position:relative">
+      <div id="confetti-container" class="confetti-container"></div>
+      <h3 id="game-question" style="text-align:center">Combine as emoções com suas características</h3>
+      <div id="game-content" class="game-grid"></div>
+    </div>
+
+    <div class="hint-row">
+      <button id="hint-btn" class="hint-btn">💡 Preciso de uma dica</button>
+    </div>
+
+    <div style="text-align:center">
+      <button id="next-game" class="btn-cta hidden" style="font-size:1rem">Próximo desafio</button>
+      <button id="finish-game" class="btn-cta hidden" style="font-size:1rem">Finalizar</button>
+    </div>
+
+    <div id="feedback" class="feedback hidden" role="status" aria-live="polite">
+      <div id="feedback-content"></div>
+      <button id="feedback-close" class="feedback-close" aria-label="Fechar aviso">✕</button>
+    </div>
+  </section>
+
+  <!-- PLANO QUANDO-ENTÃO -->
+  <section id="scr-ifthen" class="hidden fade-in">
+    <div class="card" style="max-width:640px;margin:0 auto">
+      <h2>Um plano para o dia a dia</h2>
+      <p style="color:var(--muted)">Isso é opcional. A ideia é criar um lembrete simples: quando um sinal aparecer, você tenta nomear o que sente. Toque num exemplo abaixo pra começar, ou escreva do seu jeito.</p>
+      <div id="ifthen-chips" class="chip-row"></div>
+      <textarea id="ifthen-input" class="plan-input" placeholder="Quando eu perceber ___, vou tentar nomear o que sinto."></textarea>
+      <p class="info-note">Esse formato ("quando ___, então ___") vem da pesquisa sobre intenções de implementação (Gollwitzer, 1999) — planos assim dobram a chance de a gente realmente agir no momento certo.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px">
+        <button id="ifthen-continue-btn" class="btn-cta" style="font-size:1rem;padding:12px 28px">Salvar e continuar</button>
+        <button id="ifthen-skip-btn" class="skip-check">Pular essa parte</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTADO -->
+  <section id="scr-result" class="hidden fade-in">
+    <div class="hero">
+      <h2>Você concluiu o Matiz 🌿</h2>
+    </div>
+    <div class="card" style="max-width:640px;margin:0 auto">
+      <p>Pontuação final: <span class="result-score" id="final-score">0</span> pontos</p>
+      <div id="result-delta"></div>
+      <p>Agora você tem mais palavras e pistas do corpo para reconhecer o que sente. Pode fechar esta página quando quiser — seu progresso já está salvo neste dispositivo.</p>
+
+      <div class="disclaimer-box">
+        Se quiser, use os resultados abaixo como ponto de partida numa conversa com seu/sua psicólogo/a. Tudo fica salvo só neste dispositivo — nada é enviado automaticamente.
+      </div>
+
+      <div class="export-row">
+        <button id="export-html-result" class="export-btn">
+          <span class="export-icon">📄</span>
+          <span><span class="export-title">Relatório em HTML</span><br><span class="export-sub">Pronto para imprimir ou anexar</span></span>
+        </button>
+        <button id="export-json-result" class="export-btn">
+          <span class="export-icon">🗂️</span>
+          <span><span class="export-title">Dados brutos (JSON)</span><br><span class="export-sub">Para arquivo ou envio ao/à psicólogo/a</span></span>
+        </button>
+        <button id="export-ref-result" class="export-btn">
+          <span class="export-icon">🔖</span>
+          <span><span class="export-title">Cartão de referência rápida</span><br><span class="export-sub">Um resumo das 6 emoções para guardar</span></span>
+        </button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <button id="restart-btn" class="btn-cta secondary">Jogar de novo</button>
+    </div>
+  </section>
+
+  <!-- DADOS -->
+  <section id="scr-data" class="hidden fade-in">
+    <div class="section-header">
+      <h2>Meus dados</h2>
+      <button id="data-back-btn" class="nav-btn">← Voltar ao início</button>
+    </div>
+    <div class="data-privacy">
+      🔒 Seus dados ficam salvos <strong>somente neste dispositivo</strong> (localStorage do navegador). Nada sai daqui a menos que você exporte manualmente.
+    </div>
+    <div class="card">
+      <h3>Histórico de sessões</h3>
+      <div id="session-list"></div>
+    </div>
+    <div class="card">
+      <h3>Meus planos "quando-então"</h3>
+      <div id="plan-list"></div>
+    </div>
+    <div class="card">
+      <h3>Exportar</h3>
+      <div class="export-row">
+        <button id="export-html-btn" class="export-btn">
+          <span class="export-icon">📄</span>
+          <span><span class="export-title">Relatório em HTML</span><br><span class="export-sub">Pronto para imprimir ou anexar</span></span>
+        </button>
+        <button id="export-json-btn" class="export-btn">
+          <span class="export-icon">🗂️</span>
+          <span><span class="export-title">Dados brutos (JSON)</span><br><span class="export-sub">Para arquivo ou envio ao/à psicólogo/a</span></span>
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Apagar dados</h3>
+      <p style="color:var(--muted)">Remove permanentemente o histórico salvo neste navegador.</p>
+      <button id="clear-data-btn" class="danger-btn">Apagar todo o histórico</button>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    ⚕️ Recurso psicoeducativo — não substitui acompanhamento psicológico profissional.<br>
+    © 2026 <a href="https://www.psicoterapiaeafins.com.br" target="_blank" rel="noopener">Psicoterapia e Afins</a>
+  </footer>
+
+</main>
+
+<div class="overall-progress"><div id="overall-progress-bar" class="overall-progress-bar" style="width:0%"></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
