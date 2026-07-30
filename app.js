@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
   var PREFS_KEY = 'matiz_prefs_v1';
-  var SESSIONS_KEY = 'matiz_v1';
   var PROGRESS_KEY = 'matiz_progress_v1';
   var DOSE_KEY = 'matiz_dose_v1';
+  var BODYMAP_KEY = 'matiz_bodymap_v1';
 
   var DOSE_TAGS = ['🔍 Percebi um sinal no corpo', '🏷️ Consegui nomear a emoção', '💬 Comentei com alguém', '📝 Usei meu plano quando-então'];
 
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Conteúdo conceitual (tela "O que é uma emoção?") — base teórica:
   // três componentes da emoção (Scherer), tendência de ação (Frijda),
   // expressões universais (Ekman), regulação como habilidade e não
-  // como supressão (Gross).
+  // como supressão (Gross), emoção como informação (EFT/Greenberg).
   // ---------------------------------------------------------------
   var concepts = [
     {
@@ -82,7 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // corpo/pensamento, mais origem evolutiva, tendência de ação,
   // sinais visíveis em outras pessoas e uma cena do dia a dia pra
   // conectar com a realidade. Cada emoção carrega uma frase-gatilho
-  // curta usada no plano "quando eu perceber ___".
+  // curta usada no plano "quando eu perceber ___". Fonte de conteúdo
+  // reaproveitada pela Biblioteca e pela tela de Ação do check-in.
   // ---------------------------------------------------------------
   var emotions = [
     {
@@ -177,12 +178,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   ];
 
+  function emotionByAccent(accent) {
+    return emotions.filter(function (e) { return e.accent === accent; })[0];
+  }
+
   // ---------------------------------------------------------------
   // Circumplexo de Russell (1980): toda experiência emocional pode
   // ser localizada em duas dimensões contínuas — valência (agradável
   // / desagradável) e ativação (muita / pouca energia) — antes mesmo
-  // de virar uma categoria com nome. Serve de complemento ao ensino
-  // categórico das 6 emoções básicas.
+  // de virar uma categoria com nome.
   // ---------------------------------------------------------------
   var moodQuadrants = {
     'alta-desagradavel': { label: 'Muita energia + desagradável', words: 'raiva, medo, estresse, ansiedade' },
@@ -191,40 +195,107 @@ document.addEventListener('DOMContentLoaded', function () {
     'baixa-agradavel': { label: 'Pouca energia + agradável', words: 'calma, serenidade, satisfação, contentamento' }
   };
 
-  var extraChips = ['não souber nomear o que sinto'];
-
-  var gameTypes = [
-    { question: 'Combine cada emoção com sua definição', property: 'definition', label: 'Definições', purpose: 'Praticar o conceito geral de cada emoção.' },
-    { question: 'Combine cada emoção com as sensações no corpo (em você)', property: 'physical', label: 'Sensações no corpo', purpose: 'Treinar a ligação entre sensação no corpo e nome da emoção — a base da granularidade emocional.' },
-    { question: 'Combine cada emoção com os sinais visíveis em outras pessoas', property: 'recognizeOthers', label: 'Reconhecer nos outros', purpose: 'Praticar reconhecer essa emoção em outras pessoas, pela expressão e pela postura.' },
-    { question: 'Combine cada emoção com a vontade de agir que ela desperta', property: 'actionTendency', label: 'Tendência de ação', purpose: 'Perceber o impulso específico de cada emoção — o primeiro passo pra escolher se vai segui-lo.' },
-    { question: 'Combine cada emoção com uma cena do dia a dia', property: 'scenario', label: 'Aplicar na vida real', purpose: 'Conectar cada emoção com situações reais, pra reconhecer também fora do jogo.' },
-    { question: 'Combine cada emoção com os pensamentos comuns', property: 'thoughts', label: 'Pensamentos', purpose: 'Reconhecer os pensamentos que costumam acompanhar cada emoção.' },
-    { question: 'Combine cada emoção com formas saudáveis de lidar', property: 'healthy', label: 'Formas saudáveis', purpose: 'Lembrar de respostas que ajudam quando essa emoção aparecer.' }
+  // ---------------------------------------------------------------
+  // Check-in corporal — entrada pela sensação, não pelo rótulo. É o
+  // núcleo do app: reconhecimento assistido (nunca recall livre),
+  // sem pontuação, sem certo/errado.
+  // ---------------------------------------------------------------
+  var sensationDescriptors = [
+    { key: 'aperto', label: 'Aperto' },
+    { key: 'calor', label: 'Calor' },
+    { key: 'peso', label: 'Peso' },
+    { key: 'formigamento', label: 'Formigamento' },
+    { key: 'vazio', label: 'Vazio' },
+    { key: 'tensao', label: 'Tensão' }
   ];
 
-  var feedbackMessages = {
-    correct: ['Isso mesmo! 🎉', 'Muito bem! ✨', 'Combinação certa! 👏', 'Você está indo bem! 🌟'],
-    incorrect: ['Não foi essa. Tente de novo. 💪', 'Quase lá — olhe com calma. 🔍', 'Sem problema, tente outra vez. 🌱']
+  var bodyRegions = [
+    { key: 'rosto', label: 'Rosto', icon: '😐', top: 8, left: 50 },
+    { key: 'garganta', label: 'Garganta', icon: '😮', top: 21, left: 50 },
+    { key: 'peito', label: 'Peito', icon: '❤️', top: 35, left: 50 },
+    { key: 'estomago', label: 'Estômago', icon: '🌀', top: 49, left: 50 },
+    { key: 'maos-bracos', label: 'Mãos e braços', icon: '✋', top: 40, left: 14 },
+    { key: 'ombros-musculos', label: 'Ombros e músculos', icon: '💪', top: 26, left: 86 }
+  ];
+
+  // Mapeamentos de sensação → famílias emocionais compatíveis (2-3 cada).
+  // São heurísticas psicoeducativas, não um instrumento diagnóstico —
+  // servem pra oferecer reconhecimento assistido, nunca recall livre.
+  var sensationToFamilies = {
+    aperto: ['anger', 'fear', 'sad'],
+    calor: ['anger', 'joy'],
+    peso: ['sad', 'disgust'],
+    formigamento: ['fear', 'surprise', 'joy'],
+    vazio: ['sad', 'disgust'],
+    tensao: ['anger', 'fear', 'disgust']
   };
 
-  function weekStart(dateObj) {
-    var d = dateObj ? new Date(dateObj) : new Date();
-    var day = (d.getDay() + 6) % 7; // segunda = 0
-    d.setDate(d.getDate() - day);
-    return d.toISOString().slice(0, 10);
-  }
+  var regionToFamilies = {
+    rosto: ['surprise', 'disgust', 'joy'],
+    garganta: ['sad', 'fear'],
+    peito: ['fear', 'anger', 'joy'],
+    estomago: ['disgust', 'fear', 'sad'],
+    'maos-bracos': ['anger', 'fear'],
+    'ombros-musculos': ['anger', 'fear', 'sad']
+  };
+
+  var ALL_ACCENTS = ['joy', 'sad', 'anger', 'fear', 'disgust', 'surprise'];
+
+  // Variações de intensidade dentro de cada família — descritas, não
+  // numéricas (0-10 é frio demais pra quem está começando a perceber
+  // o que sente).
+  var intensityLevels = {
+    joy: [
+      { label: 'Contentamento', text: 'Uma sensação leve e tranquila de que está tudo bem.' },
+      { label: 'Alegria', text: 'A sensação boa e clara de que algo deu certo.' },
+      { label: 'Entusiasmo', text: 'Vontade de se mexer, falar, compartilhar.' },
+      { label: 'Euforia', text: 'Uma onda forte, quase incontrolável, de empolgação.' }
+    ],
+    sad: [
+      { label: 'Incômodo leve', text: 'Um mal-estar discreto, quase passageiro.' },
+      { label: 'Melancolia', text: 'Uma tristeza mais silenciosa, meio pra dentro.' },
+      { label: 'Tristeza', text: 'O peso mais claro, com vontade de se recolher.' },
+      { label: 'Angústia', text: 'Uma dor mais funda, difícil de sustentar sozinho.' }
+    ],
+    anger: [
+      { label: 'Irritação', text: 'Um incômodo leve, fácil de deixar passar.' },
+      { label: 'Aborrecimento', text: 'Já pesa mais, começa a ocupar a cabeça.' },
+      { label: 'Raiva', text: 'Clara, com vontade real de agir.' },
+      { label: 'Fúria', text: 'Intensa, quase avassaladora, difícil de conter.' }
+    ],
+    fear: [
+      { label: 'Cautela', text: 'Um alerta leve — mais atenção do que medo.' },
+      { label: 'Preocupação', text: 'A mente já antecipa o que pode dar errado.' },
+      { label: 'Medo', text: 'O corpo entra em alerta de verdade.' },
+      { label: 'Pânico', text: 'Intensidade máxima, sensação de perigo iminente.' }
+    ],
+    disgust: [
+      { label: 'Estranhamento', text: 'Um "isso não parece certo" discreto.' },
+      { label: 'Desagrado', text: 'Incômodo mais claro com o que está diante de você.' },
+      { label: 'Nojo', text: 'Vontade real de se afastar.' },
+      { label: 'Repulsa', text: 'Intensa, quase física, difícil de ignorar.' }
+    ],
+    surprise: [
+      { label: 'Curiosidade', text: 'Um pequeno "hm, que interessante".' },
+      { label: 'Espanto', text: 'Algo genuinamente inesperado chamou sua atenção.' },
+      { label: 'Surpresa', text: 'A interrupção clara do que você esperava.' },
+      { label: 'Choque', text: 'Intensa, deixa a pessoa momentaneamente sem reação.' }
+    ]
+  };
+
+  var contextSituations = [
+    { key: 'trabalho', label: 'Trabalho/estudo' },
+    { key: 'relacionamento', label: 'Relacionamento' },
+    { key: 'sozinho', label: 'Sozinho(a)' },
+    { key: 'imprevisto', label: 'Notícia/imprevisto' },
+    { key: 'saude', label: 'Corpo/saúde' },
+    { key: 'prefiro-nao-dizer', label: 'Prefiro não dizer' }
+  ];
+
+  var extraChips = ['não souber nomear o que sinto'];
 
   function propToText(val) { return Array.isArray(val) ? val.join(' ') : val; }
   function li(text) { return '<li>' + text + '</li>'; }
-  function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-    }
-    return a;
-  }
 
   // ---------------------------------------------------------------
   // Preferências (persistidas, independentes do histórico)
@@ -240,23 +311,13 @@ document.addEventListener('DOMContentLoaded', function () {
         largeText: p.largeText === true,
         highContrast: p.highContrast === true,
         audioEnabled: p.audioEnabled !== false,
-        profile: p.profile === 'body-first' ? 'body-first' : 'general'
+        profile: p.profile === 'body-first' ? 'body-first' : 'general',
+        bodyEntryMode: p.bodyEntryMode === 'text' ? 'text' : 'body',
+        onboarded: p.onboarded === true
       };
     } catch (e) {
-      return { reducedMotion: false, largeText: false, highContrast: false, audioEnabled: true, profile: 'general' };
+      return { reducedMotion: false, largeText: false, highContrast: false, audioEnabled: true, profile: 'general', bodyEntryMode: 'body', onboarded: false };
     }
-  }
-
-  // Tailoring (Murta/GEPPSVida): a ordem dos 6 desafios muda conforme o
-  // perfil escolhido pela pessoa. "Corpo primeiro" começa pelas sensações
-  // físicas antes dos rótulos — ajuda quem tem mais dificuldade em
-  // perceber o que sente antes de nomear.
-  function buildGameOrder(profile) {
-    if (profile === 'body-first') {
-      var order = ['physical', 'recognizeOthers', 'definition', 'actionTendency', 'scenario', 'thoughts', 'healthy'];
-      return order.map(function (prop) { return gameTypes.filter(function (g) { return g.property === prop; })[0]; });
-    }
-    return gameTypes.slice();
   }
 
   function savePrefs() {
@@ -271,27 +332,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function reducedMotionActive() { return osReducedMotion || prefs.reducedMotion; }
 
+  // Vocabulário pessoal da Biblioteca — independente do mapa corporal.
+  var VOCAB_KEY = 'matiz_vocab_v1';
+  function loadVocab() {
+    try { var raw = localStorage.getItem(VOCAB_KEY); return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+  }
+  function saveVocabWord(emotionName, word) {
+    var v = loadVocab();
+    if (word) v[emotionName] = word; else delete v[emotionName];
+    try { localStorage.setItem(VOCAB_KEY, JSON.stringify(v)); } catch (e) { /* indisponível */ }
+  }
+
   // ---------------------------------------------------------------
   // Estado
   // ---------------------------------------------------------------
   var state = {
     screen: 'start',
     emotionIndex: 0,
-    gameIndex: 0,
-    score: 0,
-    selected: null,
-    matchedPairs: 0,
-    matchedEmotions: [],
     selfBefore: [null, null],
     selfAfter: [null, null],
-    gameBreakdown: [],
-    vocabWords: {},
+    showAfterCheck: false,
     ifThenPlan: '',
-    orderedGameTypes: gameTypes.slice(),
-    moodPoint: null
+    moodPoint: null,
+    lastEntryTs: null,
+    checkin: { entryMode: null, sensationKey: null, sensationLabel: null, suggestedFamilies: [], chosenFamily: undefined, intensityLabel: null, context: { situation: null, note: '' } }
   };
 
-  var totalSteps = emotions.length + gameTypes.length;
+  var totalSteps = 6; // passos do check-in corporal (tela 1 a 6)
   var completedSteps = 0;
   var currentUtterance = null;
 
@@ -305,8 +372,13 @@ document.addEventListener('DOMContentLoaded', function () {
     concept: document.getElementById('scr-concept'),
     thermometer: document.getElementById('scr-thermometer'),
     efttypes: document.getElementById('scr-efttypes'),
-    learning: document.getElementById('scr-learning'),
-    game: document.getElementById('scr-game'),
+    library: document.getElementById('scr-library'),
+    bodyentry: document.getElementById('scr-body-entry'),
+    family: document.getElementById('scr-family'),
+    intensity: document.getElementById('scr-intensity'),
+    context: document.getElementById('scr-context'),
+    action: document.getElementById('scr-action'),
+    mapregister: document.getElementById('scr-map-register'),
     ifthen: document.getElementById('scr-ifthen'),
     result: document.getElementById('scr-result'),
     data: document.getElementById('scr-data')
@@ -333,7 +405,6 @@ document.addEventListener('DOMContentLoaded', function () {
     doseSaveBtn: document.getElementById('dose-save-btn'),
     doseSkipBtn: document.getElementById('dose-skip-btn'),
 
-    goCheckBtn: document.getElementById('go-check-btn'),
     skipCheckBtn: document.getElementById('skip-check-btn'),
     checkContinueBtn: document.getElementById('check-continue-btn'),
     checkTitle: document.getElementById('check-title'),
@@ -350,31 +421,40 @@ document.addEventListener('DOMContentLoaded', function () {
     eftList: document.getElementById('eft-list'),
     eftContinueBtn: document.getElementById('eft-continue-btn'),
 
+    libraryBtn: document.getElementById('library-btn'),
     prevEmotion: document.getElementById('prev-emotion'),
     nextEmotion: document.getElementById('next-emotion'),
-    goToGame: document.getElementById('go-to-game'),
     learningProgress: document.getElementById('learning-progress'),
     emotionContent: document.getElementById('emotion-content'),
 
-    score: document.getElementById('score'),
-    gameProgress: document.getElementById('game-progress'),
-    progressText: document.getElementById('progress-text'),
-    roundPurpose: document.getElementById('round-purpose'),
-    gameQuestion: document.getElementById('game-question'),
-    gameContent: document.getElementById('game-content'),
-    hintBtn: document.getElementById('hint-btn'),
-    nextGame: document.getElementById('next-game'),
-    finishGame: document.getElementById('finish-game'),
-    feedback: document.getElementById('feedback'),
-    feedbackContent: document.getElementById('feedback-content'),
-    confettiContainer: document.getElementById('confetti-container'),
+    entryModeBody: document.getElementById('entry-mode-body'),
+    entryModeText: document.getElementById('entry-mode-text'),
+    bodyMapPanel: document.getElementById('body-map-panel'),
+    sensationListPanel: document.getElementById('sensation-list-panel'),
+    bodyHotspots: document.getElementById('body-hotspots'),
+    sensationChips: document.getElementById('sensation-chips'),
+
+    familyOptions: document.getElementById('family-options'),
+
+    intensityTitle: document.getElementById('intensity-title'),
+    intensityOptions: document.getElementById('intensity-options'),
+
+    contextChips: document.getElementById('context-chips'),
+    contextNote: document.getElementById('context-note'),
+    contextContinueBtn: document.getElementById('context-continue-btn'),
+    contextSkipBtn: document.getElementById('context-skip-btn'),
+
+    actionContent: document.getElementById('action-content'),
+    actionContinueBtn: document.getElementById('action-continue-btn'),
+
+    mapRegisterSummary: document.getElementById('map-register-summary'),
+    mapRegisterContinueBtn: document.getElementById('map-register-continue-btn'),
 
     ifthenChips: document.getElementById('ifthen-chips'),
     ifthenInput: document.getElementById('ifthen-input'),
     ifthenContinueBtn: document.getElementById('ifthen-continue-btn'),
     ifthenSkipBtn: document.getElementById('ifthen-skip-btn'),
 
-    finalScore: document.getElementById('final-score'),
     resultDelta: document.getElementById('result-delta'),
     restartBtn: document.getElementById('restart-btn'),
 
@@ -415,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function updateNav() {
     var isStart = state.screen === 'start';
     el.backBtn.disabled = isStart;
-    el.skipBtn.classList.toggle('hidden', !(state.screen === 'concept' || state.screen === 'thermometer' || state.screen === 'efttypes' || state.screen === 'learning' || state.screen === 'game'));
+    el.skipBtn.classList.toggle('hidden', !(state.screen === 'concept' || state.screen === 'thermometer' || state.screen === 'efttypes'));
     el.dataBtn.classList.toggle('hidden', state.screen === 'data');
   }
 
@@ -425,8 +505,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ---------------------------------------------------------------
-  // Retomada de sessão (efeito Zeigarnik, sem culpa)
+  // Retomada de sessão (efeito Zeigarnik, sem culpa) — cobre as telas
+  // do check-in corporal, que agora é o fluxo repetível principal.
   // ---------------------------------------------------------------
+  var RESUMABLE_SCREENS = ['bodyentry', 'family', 'intensity', 'context', 'action'];
+
   function loadProgress() {
     try {
       var raw = localStorage.getItem(PROGRESS_KEY);
@@ -437,14 +520,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function saveProgress() {
     var progress = {
       screen: state.screen,
-      emotionIndex: state.emotionIndex,
-      gameIndex: state.gameIndex,
-      score: state.score,
       completedSteps: completedSteps,
-      selfBefore: state.selfBefore,
-      vocabWords: state.vocabWords,
-      gameBreakdown: state.gameBreakdown,
-      moodPoint: state.moodPoint,
+      checkin: state.checkin,
       savedAt: new Date().toISOString()
     };
     try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* indisponível */ }
@@ -456,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function checkForResume() {
     var progress = loadProgress();
-    if (progress && (progress.screen === 'learning' || progress.screen === 'game')) {
+    if (progress && RESUMABLE_SCREENS.indexOf(progress.screen) !== -1) {
       el.resumeBanner.classList.remove('hidden');
       el.resumeBanner._data = progress;
       return true;
@@ -465,11 +542,37 @@ document.addEventListener('DOMContentLoaded', function () {
     return false;
   }
 
+  el.resumeBtn.addEventListener('click', function () {
+    var progress = el.resumeBanner._data;
+    if (!progress) return;
+    state.checkin = progress.checkin || state.checkin;
+    completedSteps = progress.completedSteps || 0;
+    updateOverallProgress();
+    if (progress.screen === 'family') { renderFamilyScreen(); showScreen('family'); }
+    else if (progress.screen === 'intensity') { renderIntensityScreen(); showScreen('intensity'); }
+    else if (progress.screen === 'context') { renderContextScreen(); showScreen('context'); }
+    else if (progress.screen === 'action') { renderActionScreen(); showScreen('action'); }
+    else { renderBodyEntry(); showScreen('bodyentry'); }
+  });
+
+  el.freshStartBtn.addEventListener('click', function () {
+    clearProgress();
+    el.resumeBanner.classList.add('hidden');
+  });
+
   // ---------------------------------------------------------------
   // Dose Cultivada: check-in semanal leve e opcional, só aparece pra
-  // quem já jogou pelo menos uma vez. Nunca bloqueia, nunca cobra —
-  // "dispensar essa semana" é uma opção tão válida quanto registrar.
+  // quem já tem pelo menos um registro no mapa. Nunca bloqueia, nunca
+  // cobra — "dispensar essa semana" é uma opção tão válida quanto
+  // registrar.
   // ---------------------------------------------------------------
+  function weekStart(dateObj) {
+    var d = dateObj ? new Date(dateObj) : new Date();
+    var day = (d.getDay() + 6) % 7; // segunda = 0
+    d.setDate(d.getDate() - day);
+    return d.toISOString().slice(0, 10);
+  }
+
   function loadDose() {
     try {
       var raw = localStorage.getItem(DOSE_KEY);
@@ -485,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var ws = weekStart();
     var dose = loadDose();
     var alreadyLogged = dose.records.some(function (r) { return r.weekStart === ws; });
-    var hasHistory = loadSessions().length > 0;
+    var hasHistory = loadBodyMap().length > 0;
     if (!hasHistory || alreadyLogged || dose.skipWeek === ws) {
       el.doseCard.classList.add('hidden');
       return;
@@ -524,34 +627,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!resuming) renderDoseCard(); else el.doseCard.classList.add('hidden');
   }
 
-  el.resumeBtn.addEventListener('click', function () {
-    var progress = el.resumeBanner._data;
-    if (!progress) return;
-    state.emotionIndex = progress.emotionIndex || 0;
-    state.gameIndex = progress.gameIndex || 0;
-    state.score = progress.score || 0;
-    state.selfBefore = progress.selfBefore || [null, null];
-    state.vocabWords = progress.vocabWords || {};
-    state.gameBreakdown = progress.gameBreakdown || [];
-    state.moodPoint = progress.moodPoint || null;
-    completedSteps = progress.completedSteps || 0;
-    el.score.textContent = state.score;
-    updateOverallProgress();
-    if (progress.screen === 'game') {
-      state.orderedGameTypes = buildGameOrder(prefs.profile);
-      showScreen('game');
-      setupGame(state.gameIndex);
-    } else {
-      showScreen('learning');
-      showEmotion(state.emotionIndex);
-    }
-  });
-
-  el.freshStartBtn.addEventListener('click', function () {
-    clearProgress();
-    el.resumeBanner.classList.add('hidden');
-  });
-
   // ---------------------------------------------------------------
   // Preferências
   // ---------------------------------------------------------------
@@ -570,19 +645,52 @@ document.addEventListener('DOMContentLoaded', function () {
   el.prefReducedMotion.addEventListener('change', function () { prefs.reducedMotion = this.checked; savePrefs(); applyPrefs(); });
   el.prefLargeText.addEventListener('change', function () { prefs.largeText = this.checked; savePrefs(); applyPrefs(); });
   el.prefHighContrast.addEventListener('change', function () { prefs.highContrast = this.checked; savePrefs(); applyPrefs(); });
-  el.prefAudio.addEventListener('change', function () { prefs.audioEnabled = this.checked; savePrefs(); if (state.screen === 'learning') showEmotion(state.emotionIndex); });
+  el.prefAudio.addEventListener('change', function () { prefs.audioEnabled = this.checked; savePrefs(); if (state.screen === 'library') showEmotion(state.emotionIndex); });
 
+  // "Como você aprende melhor?" agora reordena a Biblioteca (física
+  // primeiro) — mantido como preferência pessoal, sem afetar o
+  // check-in (que já começa pelo corpo por definição).
   el.profileGeneral.addEventListener('click', function () { prefs.profile = 'general'; savePrefs(); renderPrefsScreen(); });
   el.profileBodyFirst.addEventListener('click', function () { prefs.profile = 'body-first'; savePrefs(); renderPrefsScreen(); });
 
   // ---------------------------------------------------------------
-  // Tela inicial → autoavaliação opcional
+  // Reset — onboarding completo (primeira vez) vs. novo check-in
+  // ---------------------------------------------------------------
+  function resetCheckin() {
+    state.checkin = { entryMode: null, sensationKey: null, sensationLabel: null, suggestedFamilies: [], chosenFamily: undefined, intensityLabel: null, context: { situation: null, note: '' } };
+    state.lastEntryTs = null;
+    completedSteps = 0;
+    updateOverallProgress();
+  }
+
+  function resetSession() {
+    stopSpeech();
+    state.selfBefore = [null, null];
+    state.selfAfter = [null, null];
+    state.ifThenPlan = '';
+    state.moodPoint = null;
+    state.showAfterCheck = false;
+    resetCheckin();
+  }
+
+  function startCheckinFlow() {
+    resetCheckin();
+    renderBodyEntry();
+    showScreen('bodyentry');
+  }
+
+  // ---------------------------------------------------------------
+  // Tela inicial → onboarding (1ª vez) ou direto pro check-in
   // ---------------------------------------------------------------
   el.startBtn.addEventListener('click', function () {
     resetSession();
     clearProgress();
-    renderCheck('before');
-    showScreen('check');
+    if (prefs.onboarded) {
+      startCheckinFlow();
+    } else {
+      renderCheck('before');
+      showScreen('check');
+    }
   });
 
   function renderCheck(phase) {
@@ -622,6 +730,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   el.checkContinueBtn.addEventListener('click', proceedFromCheck);
   el.skipCheckBtn.addEventListener('click', proceedFromCheck);
+
+  function proceedFromCheck() {
+    var phase = el.checkContinueBtn.dataset.phase;
+    if (phase === 'before') {
+      renderConceptScreen();
+      showScreen('concept');
+    } else {
+      showScreen('ifthen');
+      renderIfThen();
+    }
+  }
 
   function renderConceptScreen() {
     el.conceptList.innerHTML = concepts.map(function (c) {
@@ -676,26 +795,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }).join('');
   }
 
-  el.eftContinueBtn.addEventListener('click', function () {
-    showScreen('learning');
-    showEmotion(state.emotionIndex);
-    completedSteps = 0;
-    updateOverallProgress();
-    saveProgress();
-  });
-
-  function proceedFromCheck() {
-    var phase = el.checkContinueBtn.dataset.phase;
-    if (phase === 'before') {
-      renderConceptScreen();
-      showScreen('concept');
-    } else {
-      showScreen('ifthen');
-    }
+  function finishOnboardingIntoCheckin() {
+    state.showAfterCheck = !prefs.onboarded;
+    prefs.onboarded = true;
+    savePrefs();
+    startCheckinFlow();
   }
 
+  el.eftContinueBtn.addEventListener('click', finishOnboardingIntoCheckin);
+
   // ---------------------------------------------------------------
-  // Aprendizado
+  // Biblioteca das emoções — referência livre, sem jogo, acessível a
+  // qualquer momento pelo nav. Reaproveita o conteúdo rico por emoção.
   // ---------------------------------------------------------------
   function stopSpeech() {
     if (speechSupported) window.speechSynthesis.cancel();
@@ -706,18 +817,28 @@ document.addEventListener('DOMContentLoaded', function () {
     return e.name + '. ' + e.definition + ' No corpo, em você, pode parecer: ' + e.physical.join(', ') + '. Nos outros, dá pra notar: ' + e.recognizeOthers.join(', ') + '. Dá vontade de: ' + e.actionTendency.join(', ');
   }
 
+  var BODY_FIRST_LIBRARY_ORDER = ['fear', 'anger', 'disgust', 'sad', 'joy', 'surprise'];
+
+  function libraryOrder() {
+    if (prefs.profile === 'body-first') {
+      return BODY_FIRST_LIBRARY_ORDER.map(function (a) { return emotionByAccent(a); });
+    }
+    return emotions;
+  }
+
   function showEmotion(index) {
     stopSpeech();
-    var e = emotions[index];
-    el.learningProgress.style.width = (((index + 1) / emotions.length) * 100) + '%';
+    var list = libraryOrder();
+    var e = list[index];
+    el.learningProgress.style.width = (((index + 1) / list.length) * 100) + '%';
     el.prevEmotion.disabled = index === 0;
-    el.nextEmotion.textContent = index < emotions.length - 1 ? 'Próximo →' : 'Ir para o jogo →';
-    el.goToGame.classList.toggle('hidden', index < emotions.length - 1);
+    el.nextEmotion.disabled = index === list.length - 1;
 
     var listenBtnHtml = (speechSupported && prefs.audioEnabled)
       ? '<button type="button" id="listen-btn" class="listen-btn" aria-pressed="false">🔊 Ouvir</button>' : '';
 
-    var savedWord = state.vocabWords[e.name] || '';
+    var vocab = loadVocab();
+    var savedWord = vocab[e.name] || '';
 
     el.emotionContent.innerHTML =
       '<div class="emotion-layout">' +
@@ -759,9 +880,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('vocab-input').addEventListener('change', function () {
-      var v = this.value.trim();
-      if (v) state.vocabWords[e.name] = v; else delete state.vocabWords[e.name];
-      saveProgress();
+      saveVocabWord(e.name, this.value.trim());
     });
 
     var listenBtn = document.getElementById('listen-btn');
@@ -784,210 +903,272 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  el.libraryBtn.addEventListener('click', function () {
+    stopSpeech();
+    state.emotionIndex = 0;
+    showScreen('library');
+    showEmotion(0);
+  });
+
   el.prevEmotion.addEventListener('click', function () {
-    if (state.emotionIndex > 0) {
-      state.emotionIndex--;
-      showEmotion(state.emotionIndex);
-      completedSteps = Math.max(0, completedSteps - 1);
-      updateOverallProgress();
-      saveProgress();
-    }
+    if (state.emotionIndex > 0) { state.emotionIndex--; showEmotion(state.emotionIndex); }
   });
 
   el.nextEmotion.addEventListener('click', function () {
-    if (state.emotionIndex < emotions.length - 1) {
-      state.emotionIndex++;
-      showEmotion(state.emotionIndex);
-      completedSteps++;
-      updateOverallProgress();
-      saveProgress();
-    } else {
-      goToGame();
-    }
+    if (state.emotionIndex < libraryOrder().length - 1) { state.emotionIndex++; showEmotion(state.emotionIndex); }
   });
 
-  el.goToGame.addEventListener('click', goToGame);
+  // ---------------------------------------------------------------
+  // CHECK-IN 1 — Entrada pela sensação (mapa do corpo ou lista)
+  // ---------------------------------------------------------------
+  function setEntryMode(mode) {
+    prefs.bodyEntryMode = mode;
+    savePrefs();
+    el.entryModeBody.setAttribute('aria-selected', String(mode === 'body'));
+    el.entryModeText.setAttribute('aria-selected', String(mode === 'text'));
+    el.bodyMapPanel.classList.toggle('hidden', mode !== 'body');
+    el.sensationListPanel.classList.toggle('hidden', mode !== 'text');
+  }
 
-  function goToGame() {
-    stopSpeech();
-    completedSteps = emotions.length;
+  el.entryModeBody.addEventListener('click', function () { setEntryMode('body'); });
+  el.entryModeText.addEventListener('click', function () { setEntryMode('text'); });
+
+  function renderBodyEntry() {
+    setEntryMode(prefs.bodyEntryMode);
+    el.bodyHotspots.innerHTML = bodyRegions.map(function (r) {
+      return '<button type="button" class="body-hotspot" style="top:' + r.top + '%;left:' + r.left + '%" data-region="' + r.key + '"><span aria-hidden="true">' + r.icon + '</span> ' + r.label + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.bodyHotspots.querySelectorAll('.body-hotspot'), function (btn) {
+      btn.addEventListener('click', function () {
+        var region = bodyRegions.filter(function (r) { return r.key === btn.dataset.region; })[0];
+        pickSensation('body', region.key, region.label);
+      });
+    });
+
+    el.sensationChips.innerHTML = sensationDescriptors.map(function (s) {
+      return '<button type="button" class="chip" data-sensation="' + s.key + '">' + s.label + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.sensationChips.querySelectorAll('.chip'), function (btn) {
+      btn.addEventListener('click', function () {
+        var s = sensationDescriptors.filter(function (d) { return d.key === btn.dataset.sensation; })[0];
+        pickSensation('text', s.key, s.label);
+      });
+    });
+  }
+
+  function pickSensation(mode, key, label) {
+    state.checkin.entryMode = mode;
+    state.checkin.sensationKey = key;
+    state.checkin.sensationLabel = label;
+    completedSteps = 1;
     updateOverallProgress();
-    state.orderedGameTypes = buildGameOrder(prefs.profile);
-    showScreen('game');
-    setupGame(state.gameIndex);
-  }
-
-  // ---------------------------------------------------------------
-  // Jogo de associação
-  // ---------------------------------------------------------------
-  function updateGameProgress() {
-    el.gameProgress.style.width = (((state.gameIndex + 1) / state.orderedGameTypes.length) * 100) + '%';
-    el.progressText.textContent = 'Desafio ' + (state.gameIndex + 1) + '/' + state.orderedGameTypes.length;
-  }
-
-  function setupGame(index) {
-    var gt = state.orderedGameTypes[index];
-    el.gameQuestion.textContent = gt.question;
-    el.roundPurpose.textContent = 'Por que este desafio: ' + gt.purpose;
-    el.nextGame.classList.add('hidden');
-    el.finishGame.classList.add('hidden');
-    el.hintBtn.disabled = false;
-    updateGameProgress();
-
-    state.matchedPairs = 0;
-    state.matchedEmotions = [];
-    state.gameBreakdown[index] = { label: gt.label, correct: 0, total: emotions.length, attempts: 0 };
-
-    var left = shuffle(emotions);
-    var right = shuffle(emotions);
-
-    var col1 = document.createElement('div');
-    col1.className = 'game-col';
-    col1.setAttribute('role', 'group');
-    col1.setAttribute('aria-label', 'Emoções');
-    left.forEach(function (e) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'emotion-card';
-      b.dataset.emotion = e.name;
-      b.setAttribute('aria-pressed', 'false');
-      b.innerHTML = '<span class="emoji-circle accent-' + e.accent + '" aria-hidden="true">' + e.emoji + '</span><span>' + e.name + '</span><span class="check-badge" aria-hidden="true">✓</span>';
-      b.addEventListener('click', function () { handleEmotionClick(e.name, b); });
-      col1.appendChild(b);
-    });
-
-    var col2 = document.createElement('div');
-    col2.className = 'game-col';
-    col2.setAttribute('role', 'group');
-    col2.setAttribute('aria-label', 'Descrições');
-    right.forEach(function (e) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'match-card';
-      b.dataset.property = e.name;
-      b.innerHTML = '<span>' + propToText(e[gt.property]) + '</span>';
-      b.addEventListener('click', function () { handlePropertyClick(e.name, b); });
-      col2.appendChild(b);
-    });
-
-    el.gameContent.innerHTML = '';
-    el.gameContent.appendChild(col1);
-    el.gameContent.appendChild(col2);
-    state.selected = null;
+    renderFamilyScreen();
+    showScreen('family');
     saveProgress();
   }
 
-  function handleEmotionClick(name, cardEl) {
-    if (state.matchedEmotions.indexOf(name) !== -1) return;
-    Array.prototype.forEach.call(document.querySelectorAll('.emotion-card'), function (c) { c.setAttribute('aria-pressed', 'false'); });
-    cardEl.setAttribute('aria-pressed', 'true');
-    state.selected = name;
+  // ---------------------------------------------------------------
+  // CHECK-IN 2 — Sugestão de famílias emocionais (reconhecimento
+  // assistido; "nenhuma dessas ainda" e "ainda não sei" são respostas
+  // válidas, nunca uma pergunta aberta).
+  // ---------------------------------------------------------------
+  function familyCardHtml(accent) {
+    var e = emotionByAccent(accent);
+    return '<button type="button" class="family-card" data-accent="' + accent + '">' +
+      '<span class="emoji-circle accent-' + e.accent + '" aria-hidden="true">' + e.emoji + '</span>' +
+      '<span><strong>' + e.name + '</strong><br><span class="family-card-def">' + e.definition + '</span></span>' +
+      '</button>';
   }
 
-  function handlePropertyClick(name, cardEl) {
-    if (cardEl.classList.contains('correct')) return;
-    if (!state.selected) { announceFeedback(false, 'Selecione uma emoção primeiro, na coluna da esquerda.'); return; }
+  function renderFamilyScreen() {
+    var mode = state.checkin.entryMode;
+    var families = (mode === 'body' ? regionToFamilies : sensationToFamilies)[state.checkin.sensationKey] || [];
+    state.checkin.suggestedFamilies = families.slice();
+    el.familyOptions.innerHTML =
+      '<p style="color:var(--muted);margin-top:0">Você marcou: <strong>' + state.checkin.sensationLabel + '</strong></p>' +
+      families.map(familyCardHtml).join('') +
+      '<button type="button" class="family-card family-card-more" id="family-more-btn">Nenhuma dessas ainda</button>';
+    wireFamilyCards();
+    document.getElementById('family-more-btn').addEventListener('click', revealMoreFamilies);
+  }
 
-    var breakdown = state.gameBreakdown[state.gameIndex];
-    breakdown.attempts++;
-    var reduced = reducedMotionActive();
+  function wireFamilyCards() {
+    Array.prototype.forEach.call(el.familyOptions.querySelectorAll('.family-card[data-accent]'), function (btn) {
+      btn.addEventListener('click', function () { pickFamily(btn.dataset.accent); });
+    });
+  }
 
-    if (state.selected === name) {
-      cardEl.classList.add('correct');
-      if (!reduced) { cardEl.classList.add('pop'); setTimeout(function () { cardEl.classList.remove('pop'); }, 400); }
-      cardEl.innerHTML += '<div class="back-name">' + name + '</div>';
-      state.score += 10;
-      el.score.textContent = state.score;
-      state.matchedEmotions.push(name);
-      breakdown.correct++;
+  function revealMoreFamilies() {
+    var remaining = ALL_ACCENTS.filter(function (a) { return state.checkin.suggestedFamilies.indexOf(a) === -1; });
+    el.familyOptions.innerHTML =
+      '<p style="color:var(--muted);margin-top:0">Sem problema — aqui estão as outras:</p>' +
+      remaining.map(familyCardHtml).join('') +
+      '<button type="button" class="family-card family-card-more" id="family-unknown-btn">Ainda não sei</button>';
+    wireFamilyCards();
+    document.getElementById('family-unknown-btn').addEventListener('click', function () { pickFamily(null); });
+  }
 
-      Array.prototype.forEach.call(document.querySelectorAll('.emotion-card'), function (c) {
-        if (c.dataset.emotion === state.selected) c.classList.add('matched');
-      });
-
-      createConfetti();
-      announceFeedback(true);
-      state.matchedPairs++;
-      saveProgress();
-
-      if (state.matchedPairs === emotions.length) {
-        setTimeout(function () {
-          if (state.gameIndex < gameTypes.length - 1) { el.nextGame.classList.remove('hidden'); el.nextGame.focus(); }
-          else { el.finishGame.classList.remove('hidden'); el.finishGame.focus(); }
-        }, 600);
-      }
+  function pickFamily(accent) {
+    state.checkin.chosenFamily = accent;
+    completedSteps = accent ? 2 : 3;
+    updateOverallProgress();
+    if (accent) {
+      renderIntensityScreen();
+      showScreen('intensity');
     } else {
-      cardEl.classList.add('incorrect');
-      if (!reduced) cardEl.classList.add('shake');
-      setTimeout(function () { cardEl.classList.remove('incorrect', 'shake'); }, 900);
-      announceFeedback(false);
+      renderContextScreen();
+      showScreen('context');
     }
-
-    Array.prototype.forEach.call(document.querySelectorAll('.emotion-card'), function (c) { c.setAttribute('aria-pressed', 'false'); });
-    state.selected = null;
+    saveProgress();
   }
 
-  el.hintBtn.addEventListener('click', function () {
-    var remaining = emotions.filter(function (e) { return state.matchedEmotions.indexOf(e.name) === -1; });
-    if (!remaining.length) return;
-    var target = remaining[0];
-    var card = document.querySelector('.emotion-card[data-emotion="' + cssEscape(target.name) + '"]');
-    var match = document.querySelector('.match-card[data-property="' + cssEscape(target.name) + '"]');
-    if (card) { card.scrollIntoView({ behavior: reducedMotionActive() ? 'auto' : 'smooth', block: 'center' }); card.style.outline = '3px solid var(--accent)'; }
-    if (match) match.style.outline = '3px solid var(--accent)';
-    announceFeedback(true, 'Dica: procure a descrição de "' + target.name + '" — ela está destacada.');
-  });
-
-  function cssEscape(s) { return s.replace(/"/g, '\\"'); }
-
-  function announceFeedback(isCorrect, customMessage) {
-    var messages = isCorrect ? feedbackMessages.correct : feedbackMessages.incorrect;
-    var msg = customMessage || messages[Math.floor(Math.random() * messages.length)];
-    el.feedbackContent.textContent = (isCorrect ? '🎉 ' : '🤔 ') + msg;
-    el.feedback.classList.remove('hidden', 'correct-fb', 'incorrect-fb');
-    el.feedback.classList.add(isCorrect ? 'correct-fb' : 'incorrect-fb');
-    clearTimeout(announceFeedback._t);
-    announceFeedback._t = setTimeout(function () { el.feedback.classList.add('hidden'); }, isCorrect ? 2200 : 2800);
+  // ---------------------------------------------------------------
+  // CHECK-IN 3 — Intensidade dentro da família escolhida
+  // ---------------------------------------------------------------
+  function renderIntensityScreen() {
+    var e = emotionByAccent(state.checkin.chosenFamily);
+    el.intensityTitle.textContent = 'Dentro de ' + e.name + ', qual combina mais?';
+    var levels = intensityLevels[state.checkin.chosenFamily];
+    el.intensityOptions.innerHTML = levels.map(function (lvl) {
+      return '<button type="button" class="family-card" data-label="' + lvl.label.replace(/"/g, '&quot;') + '">' +
+        '<span><strong>' + lvl.label + '</strong><br><span class="family-card-def">' + lvl.text + '</span></span>' +
+        '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.intensityOptions.querySelectorAll('.family-card'), function (btn) {
+      btn.addEventListener('click', function () { pickIntensity(btn.dataset.label); });
+    });
   }
 
-  document.getElementById('feedback-close').addEventListener('click', function () {
-    clearTimeout(announceFeedback._t);
-    el.feedback.classList.add('hidden');
-  });
-
-  function createConfetti() {
-    if (reducedMotionActive()) return;
-    var colors = ['#4F6D7A', '#C97B4A', '#B98A1D', '#3D7A4E', '#3B6EA5'];
-    for (var i = 0; i < 22; i++) {
-      var c = document.createElement('div');
-      c.className = 'confetti';
-      c.style.left = (Math.random() * 100) + '%';
-      c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      var size = (Math.random() * 8 + 5);
-      c.style.width = size + 'px';
-      c.style.height = size + 'px';
-      c.style.animationDuration = (Math.random() * 1.5 + 1.8) + 's';
-      el.confettiContainer.appendChild(c);
-      (function (node) { setTimeout(function () { node.remove(); }, 4000); })(c);
-    }
-  }
-
-  el.nextGame.addEventListener('click', function () {
-    state.gameIndex++;
-    completedSteps++;
+  function pickIntensity(label) {
+    state.checkin.intensityLabel = label;
+    completedSteps = 3;
     updateOverallProgress();
-    setupGame(state.gameIndex);
-  });
+    renderContextScreen();
+    showScreen('context');
+    saveProgress();
+  }
 
-  el.finishGame.addEventListener('click', function () {
-    completedSteps = totalSteps;
+  // ---------------------------------------------------------------
+  // CHECK-IN 4 — Contexto (sempre opcional)
+  // ---------------------------------------------------------------
+  function renderContextScreen() {
+    el.contextChips.innerHTML = contextSituations.map(function (s) {
+      var pressed = state.checkin.context.situation === s.key;
+      return '<button type="button" class="chip" data-situation="' + s.key + '" aria-pressed="' + pressed + '">' + s.label + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.contextChips.querySelectorAll('.chip'), function (btn) {
+      btn.addEventListener('click', function () {
+        var already = btn.getAttribute('aria-pressed') === 'true';
+        Array.prototype.forEach.call(el.contextChips.querySelectorAll('.chip'), function (c) { c.setAttribute('aria-pressed', 'false'); });
+        state.checkin.context.situation = already ? null : btn.dataset.situation;
+        if (!already) btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+    el.contextNote.value = state.checkin.context.note || '';
+  }
+
+  function proceedFromContext() {
+    state.checkin.context.note = el.contextNote.value.trim();
+    completedSteps = 4;
     updateOverallProgress();
-    showScreen('ifthen');
-    renderIfThen();
+    renderActionScreen();
+    showScreen('action');
+    saveProgress();
+  }
+
+  el.contextContinueBtn.addEventListener('click', proceedFromContext);
+  el.contextSkipBtn.addEventListener('click', function () {
+    state.checkin.context.situation = null;
+    state.checkin.context.note = '';
+    completedSteps = 4;
+    updateOverallProgress();
+    renderActionScreen();
+    showScreen('action');
+    saveProgress();
   });
 
   // ---------------------------------------------------------------
-  // Pular etapa
+  // CHECK-IN 5 — Ação possível (impulso do corpo x uma opção, sem
+  // julgamento; conteúdo genérico quando nenhuma família foi eleita)
+  // ---------------------------------------------------------------
+  function renderActionScreen() {
+    var accent = state.checkin.chosenFamily;
+    if (accent) {
+      var e = emotionByAccent(accent);
+      el.actionContent.innerHTML =
+        '<div class="emotion-block"><h4>O que seu corpo quer fazer</h4><ul>' + e.actionTendency.map(li).join('') + '</ul></div>' +
+        '<div class="emotion-block"><h4>Uma ação possível (não a única certa)</h4><ul>' + e.healthy.map(li).join('') + '</ul></div>' +
+        '<div class="apply-tip">🎯 ' + e.applyPrompt + '</div>';
+    } else {
+      el.actionContent.innerHTML =
+        '<p>Sem problema não ter uma família ainda — só perceber a sensação já é um passo.</p>' +
+        '<div class="emotion-block"><h4>Algumas ideias gerais</h4><ul>' +
+        li('Respirar fundo por alguns segundos') + li('Beber um pouco de água') + li('Mudar de ambiente por um momento') + li('Só continuar observando, sem pressa de nomear') +
+        '</ul></div>';
+    }
+  }
+
+  el.actionContinueBtn.addEventListener('click', function () {
+    completedSteps = 5;
+    updateOverallProgress();
+    finalizeCheckinEntry();
+    renderMapRegisterScreen();
+    showScreen('mapregister');
+  });
+
+  // ---------------------------------------------------------------
+  // CHECK-IN 6 — Registro no mapa pessoal (sem pontuação)
+  // ---------------------------------------------------------------
+  function finalizeCheckinEntry() {
+    var entry = {
+      ts: Date.now(),
+      date: new Date().toISOString(),
+      entryMode: state.checkin.entryMode,
+      sensationKey: state.checkin.sensationKey,
+      sensationLabel: state.checkin.sensationLabel,
+      suggestedFamilies: state.checkin.suggestedFamilies,
+      chosenFamily: state.checkin.chosenFamily || null,
+      intensityLabel: state.checkin.intensityLabel,
+      context: state.checkin.context,
+      ifThenPlan: null
+    };
+    saveBodyMapEntry(entry);
+    state.lastEntryTs = entry.ts;
+    completedSteps = 6;
+    updateOverallProgress();
+    clearProgress();
+  }
+
+  function renderMapRegisterScreen() {
+    var map = loadBodyMap();
+    var s = summarizeBodyMap(map);
+    var sensationLabelOf = function (key) {
+      var d = sensationDescriptors.filter(function (x) { return x.key === key; })[0];
+      if (d) return d.label;
+      var r = bodyRegions.filter(function (x) { return x.key === key; })[0];
+      return r ? r.label : key;
+    };
+    var html = '<p style="margin:0 0 10px"><strong>Você já tem ' + s.total + ' registro' + (s.total === 1 ? '' : 's') + '</strong> no seu mapa pessoal.</p>';
+    if (s.topSensation) html += '<p style="margin:4px 0">Sensação mais comum: <strong>' + sensationLabelOf(s.topSensation) + '</strong> (' + s.topSensationCount + 'x)</p>';
+    if (s.topFamily) html += '<p style="margin:4px 0">Família mais identificada: <strong>' + emotionByAccent(s.topFamily).name + '</strong> (' + s.topFamilyCount + 'x)</p>';
+    if (s.unknownCount) html += '<p style="margin:4px 0;color:var(--muted)">Em ' + s.unknownRate + '% dos registros, ainda não rolou identificar uma família — completamente normal, isso também é dado.</p>';
+    el.mapRegisterSummary.innerHTML = html;
+  }
+
+  el.mapRegisterContinueBtn.addEventListener('click', function () {
+    if (state.showAfterCheck) {
+      state.showAfterCheck = false;
+      renderCheck('after');
+      showScreen('check');
+    } else {
+      showScreen('ifthen');
+      renderIfThen();
+    }
+  });
+
+  // ---------------------------------------------------------------
+  // Pular etapa (só se aplica ao trio de onboarding — cada tela do
+  // check-in já tem seus próprios botões de continuar/pular)
   // ---------------------------------------------------------------
   el.skipBtn.addEventListener('click', function () {
     if (state.screen === 'concept') {
@@ -997,33 +1178,7 @@ document.addEventListener('DOMContentLoaded', function () {
       renderEftScreen();
       showScreen('efttypes');
     } else if (state.screen === 'efttypes') {
-      showScreen('learning');
-      showEmotion(state.emotionIndex);
-      completedSteps = 0;
-      updateOverallProgress();
-      saveProgress();
-    } else if (state.screen === 'game') {
-      if (state.gameIndex < gameTypes.length - 1) {
-        state.gameIndex++;
-        completedSteps++;
-        updateOverallProgress();
-        setupGame(state.gameIndex);
-      } else {
-        completedSteps = totalSteps;
-        updateOverallProgress();
-        showScreen('ifthen');
-        renderIfThen();
-      }
-    } else if (state.screen === 'learning') {
-      if (state.emotionIndex < emotions.length - 1) {
-        state.emotionIndex++;
-        showEmotion(state.emotionIndex);
-        completedSteps++;
-        updateOverallProgress();
-        saveProgress();
-      } else {
-        goToGame();
-      }
+      finishOnboardingIntoCheckin();
     }
   });
 
@@ -1054,25 +1209,19 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ---------------------------------------------------------------
-  // Resultado + persistência local
+  // Resultado — anexa o plano quando-então ao registro do mapa que
+  // acabou de ser criado, mostra o delta da autoavaliação (se houver)
   // ---------------------------------------------------------------
   function finalizeResult() {
-    var vocabList = Object.keys(state.vocabWords).map(function (k) { return { emotion: k, word: state.vocabWords[k] }; });
-    var session = {
-      date: new Date().toISOString(),
-      score: state.score,
-      totalPossible: emotions.length * gameTypes.length * 10,
-      selfBefore: state.selfBefore,
-      selfAfter: state.selfAfter,
-      breakdown: state.gameBreakdown.map(function (b) { return b; }),
-      vocabWords: vocabList,
-      ifThenPlan: state.ifThenPlan || null,
-      moodPoint: state.moodPoint || null
-    };
-    saveSession(session);
-    clearProgress();
+    if (state.ifThenPlan && state.lastEntryTs) {
+      var map = loadBodyMap();
+      var entry = map.filter(function (r) { return r.ts === state.lastEntryTs; })[0];
+      if (entry) {
+        entry.ifThenPlan = state.ifThenPlan;
+        try { localStorage.setItem(BODYMAP_KEY, JSON.stringify(map)); } catch (e) { /* indisponível */ }
+      }
+    }
 
-    el.finalScore.textContent = state.score;
     var deltaHtml = '';
     if (state.selfBefore.every(function (v) { return v !== null; }) && state.selfAfter.every(function (v) { return v !== null; })) {
       var d1 = state.selfAfter[0] - state.selfBefore[0];
@@ -1083,28 +1232,8 @@ document.addEventListener('DOMContentLoaded', function () {
     showScreen('result');
   }
 
-  function resetSession() {
-    stopSpeech();
-    state.emotionIndex = 0;
-    state.gameIndex = 0;
-    state.score = 0;
-    state.matchedPairs = 0;
-    state.matchedEmotions = [];
-    state.selfBefore = [null, null];
-    state.selfAfter = [null, null];
-    state.gameBreakdown = [];
-    state.vocabWords = {};
-    state.ifThenPlan = '';
-    state.orderedGameTypes = gameTypes.slice();
-    state.moodPoint = null;
-    completedSteps = 0;
-    el.score.textContent = 0;
-    updateOverallProgress();
-  }
-
   el.restartBtn.addEventListener('click', function () {
     resetSession();
-    clearProgress();
     refreshStartScreen();
     showScreen('start');
   });
@@ -1115,13 +1244,18 @@ document.addEventListener('DOMContentLoaded', function () {
   el.backBtn.addEventListener('click', function () {
     switch (state.screen) {
       case 'prefs': showScreen('start'); break;
-      case 'check': showScreen('start'); break;
+      case 'check': showScreen(el.checkContinueBtn.dataset.phase === 'after' ? 'mapregister' : 'start'); break;
       case 'concept': showScreen('start'); break;
       case 'thermometer': showScreen('concept'); break;
       case 'efttypes': showScreen('thermometer'); break;
-      case 'learning': showScreen('efttypes'); break;
-      case 'game': showScreen('learning'); break;
-      case 'ifthen': showScreen('game'); break;
+      case 'library': showScreen('start'); break;
+      case 'bodyentry': showScreen('efttypes'); break;
+      case 'family': showScreen('bodyentry'); break;
+      case 'intensity': showScreen('family'); break;
+      case 'context': showScreen(state.checkin.chosenFamily ? 'intensity' : 'family'); break;
+      case 'action': showScreen('context'); break;
+      case 'mapregister': showScreen('action'); break;
+      case 'ifthen': showScreen('mapregister'); break;
       case 'result': showScreen('ifthen'); break;
       case 'data': showScreen('start'); break;
     }
@@ -1133,52 +1267,80 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('data-back-btn').addEventListener('click', function () { showScreen('start'); });
 
   // ---------------------------------------------------------------
-  // Dados: armazenamento local + exportação
+  // Mapa pessoal (check-in corporal) — substitui a pontuação por um
+  // histórico que cresce com o tempo, sem certo/errado.
   // ---------------------------------------------------------------
-  function loadSessions() {
+  function loadBodyMap() {
     try {
-      var raw = localStorage.getItem(SESSIONS_KEY);
+      var raw = localStorage.getItem(BODYMAP_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch (e) { return []; }
   }
 
-  function saveSession(session) {
-    var sessions = loadSessions();
-    sessions.push(session);
-    try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions)); } catch (e) { /* indisponível */ }
+  function saveBodyMapEntry(entry) {
+    var map = loadBodyMap();
+    map.push(entry);
+    try { localStorage.setItem(BODYMAP_KEY, JSON.stringify(map)); } catch (e) { /* indisponível */ }
+    return map;
+  }
+
+  function summarizeBodyMap(map) {
+    function topKey(counts) {
+      var best = null;
+      Object.keys(counts).forEach(function (k) {
+        if (!best || counts[k] > counts[best]) best = k;
+      });
+      return best;
+    }
+    var sensationCounts = {}, familyCounts = {}, unknownCount = 0;
+    map.forEach(function (r) {
+      sensationCounts[r.sensationKey] = (sensationCounts[r.sensationKey] || 0) + 1;
+      if (r.chosenFamily) familyCounts[r.chosenFamily] = (familyCounts[r.chosenFamily] || 0) + 1;
+      else unknownCount++;
+    });
+    var topSensation = topKey(sensationCounts);
+    var topFamily = topKey(familyCounts);
+    return {
+      total: map.length,
+      topSensation: topSensation, topSensationCount: topSensation ? sensationCounts[topSensation] : 0,
+      topFamily: topFamily, topFamilyCount: topFamily ? familyCounts[topFamily] : 0,
+      unknownCount: unknownCount,
+      unknownRate: map.length ? Math.round((unknownCount / map.length) * 100) : 0
+    };
   }
 
   function renderDataScreen() {
-    var sessions = loadSessions();
-    if (!sessions.length) {
-      el.sessionList.innerHTML = '<p class="empty-note">Nenhuma sessão registrada ainda. Jogue uma vez para começar a acompanhar seu progresso.</p>';
+    var map = loadBodyMap();
+    if (!map.length) {
+      el.sessionList.innerHTML = '<p class="empty-note">Nenhum registro ainda. Faça um check-in para começar seu mapa pessoal.</p>';
     } else {
-      el.sessionList.innerHTML = sessions.map(function (s, i) {
-        var d = new Date(s.date);
-        return '<div class="session-row"><span>' + (i + 1) + '. ' + d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</span><span>' + s.score + ' / ' + s.totalPossible + ' pontos</span></div>';
+      el.sessionList.innerHTML = map.slice().reverse().map(function (r) {
+        var d = new Date(r.date);
+        var familyName = r.chosenFamily ? emotionByAccent(r.chosenFamily).name : 'ainda não identificada';
+        return '<div class="session-row"><span>' + d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' — ' + (r.sensationLabel || r.sensationKey) + '</span><span>' + familyName + '</span></div>';
       }).join('');
     }
 
-    var plans = sessions.filter(function (s) { return s.ifThenPlan; });
+    var plans = map.filter(function (r) { return r.ifThenPlan; });
     if (!plans.length) {
       el.planList.innerHTML = '<p class="empty-note">Nenhum plano salvo ainda.</p>';
     } else {
-      el.planList.innerHTML = plans.map(function (s) {
-        var d = new Date(s.date);
-        return '<div class="session-row" style="display:block"><strong>' + d.toLocaleDateString('pt-BR') + ':</strong> ' + s.ifThenPlan + '</div>';
+      el.planList.innerHTML = plans.slice().reverse().map(function (r) {
+        var d = new Date(r.date);
+        return '<div class="session-row" style="display:block"><strong>' + d.toLocaleDateString('pt-BR') + ':</strong> ' + r.ifThenPlan + '</div>';
       }).join('');
     }
   }
 
-  el.exportJsonBtn.addEventListener('click', function () { exportJSON(loadSessions()); });
-  el.exportHtmlBtn.addEventListener('click', function () { exportHTML(loadSessions()); });
-  el.exportJsonResult.addEventListener('click', function () { exportJSON(loadSessions()); });
-  el.exportHtmlResult.addEventListener('click', function () { exportHTML(loadSessions()); });
+  el.exportJsonBtn.addEventListener('click', function () { exportJSON(loadBodyMap()); });
+  el.exportHtmlBtn.addEventListener('click', function () { exportHTML(loadBodyMap()); });
+  el.exportJsonResult.addEventListener('click', function () { exportJSON(loadBodyMap()); });
+  el.exportHtmlResult.addEventListener('click', function () { exportHTML(loadBodyMap()); });
   el.exportRefResult.addEventListener('click', function () { exportQuickReference(); });
 
   el.clearDataBtn.addEventListener('click', function () {
     if (window.confirm('Isso vai apagar todo o histórico salvo neste dispositivo. Deseja continuar?')) {
-      localStorage.removeItem(SESSIONS_KEY);
+      localStorage.removeItem(BODYMAP_KEY);
       renderDataScreen();
     }
   });
@@ -1192,23 +1354,20 @@ document.addEventListener('DOMContentLoaded', function () {
     URL.revokeObjectURL(url);
   }
 
-  function exportJSON(sessions) {
-    var payload = { app: 'Matiz', exportedAt: new Date().toISOString(), sessions: sessions };
+  function exportJSON(map) {
+    var payload = { app: 'Matiz', exportedAt: new Date().toISOString(), bodyMap: map };
     downloadFile('matiz-dados-' + Date.now() + '.json', JSON.stringify(payload, null, 2), 'application/json');
   }
 
-  function exportHTML(sessions) {
-    var rows = sessions.map(function (s, i) {
-      var d = new Date(s.date);
-      var breakdownRows = s.breakdown.map(function (b) { return '<li>' + b.label + ': ' + b.correct + '/' + b.total + '</li>'; }).join('');
-      var vocabRows = (s.vocabWords || []).map(function (v) { return '<li>' + v.emotion + ' → "' + v.word + '"</li>'; }).join('');
+  function exportHTML(map) {
+    var rows = map.map(function (r, i) {
+      var d = new Date(r.date);
+      var familyName = r.chosenFamily ? emotionByAccent(r.chosenFamily).name : 'ainda não identificada';
       return '<div style="margin-bottom:24px;padding:16px;border:1px solid #E5E0D8;border-radius:12px;">' +
-        '<strong>Sessão ' + (i + 1) + '</strong> — ' + d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
-        '<p>Pontuação: ' + s.score + ' / ' + s.totalPossible + '</p>' +
-        (breakdownRows ? '<p><strong>Desempenho por desafio:</strong></p><ul>' + breakdownRows + '</ul>' : '') +
-        (vocabRows ? '<p><strong>Palavras próprias:</strong></p><ul>' + vocabRows + '</ul>' : '') +
-        (s.moodPoint ? '<p><strong>Termômetro emocional:</strong> valência ' + s.moodPoint.valence + ', ativação ' + s.moodPoint.arousal + ' (' + (moodQuadrants[s.moodPoint.quadrant] ? moodQuadrants[s.moodPoint.quadrant].label : s.moodPoint.quadrant) + ')</p>' : '') +
-        (s.ifThenPlan ? '<p><strong>Plano:</strong> ' + s.ifThenPlan + '</p>' : '') +
+        '<strong>Registro ' + (i + 1) + '</strong> — ' + d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
+        '<p>Sensação: ' + (r.sensationLabel || r.sensationKey) + ' · Família: ' + familyName + (r.intensityLabel ? ' (' + r.intensityLabel + ')' : '') + '</p>' +
+        (r.context && (r.context.situation || r.context.note) ? '<p>Contexto: ' + (r.context.situation || '') + (r.context.note ? ' — ' + r.context.note : '') + '</p>' : '') +
+        (r.ifThenPlan ? '<p><strong>Plano:</strong> ' + r.ifThenPlan + '</p>' : '') +
         '</div>';
     }).join('');
 

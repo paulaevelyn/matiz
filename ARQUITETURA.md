@@ -59,30 +59,63 @@ rótulos:
    das 6 emoções básicas, e conecta com a própria ideia de granularidade
    emocional (Barrett) que já fundamenta o app.
 
-**Nova sequência de telas:** Início → Preferências/Autoavaliação →
-Conceitos → **Termômetro Emocional** → **Nem toda emoção é o que
-parece** → Aprendizado (6 emoções) → Jogo (7 desafios) → Quando-então →
-Resultado. As duas novas etapas são puladas com o mesmo botão "Pular
-etapa" já existente, sem quebrar o fluxo pra quem preferir ir direto às
-6 emoções.
+### Camadas teóricas do onboarding (uma vez só)
 
-### Camadas teóricas adicionais (tela "O que é uma emoção?")
+Antes do check-in corporal, uma sequência conceitual cobre: (a) os três
+componentes de uma emoção — corpo, sentimento subjetivo, tendência de
+ação (Scherer); (b) função adaptativa das emoções básicas, sem hierarquia
+de "certo/errado"; (c) **tendência de ação** (Frijda) — cada emoção
+carrega um impulso específico, e reconhecê-lo é o que abre a escolha de
+segui-lo ou não; (d) regulação emocional como habilidade de
+perceber→nomear→escolher (Gross), não como supressão; (e) dois radares de
+reconhecimento — interno (interocepção) e externo (expressões
+faciais/posturais universais, Ekman); (f) **Circumplexo de Russell**
+(Termômetro Emocional); (g) tipologia de respostas emocionais da EFT
+(Nem toda emoção é o que parece). Essa sequência roda **uma única vez**
+(controlado por `prefs.onboarded`) — em retornos, "Começar" pula direto
+pro check-in corporal.
 
-Antes das 6 emoções, uma tela conceitual cobre: (a) os três componentes de
-uma emoção — corpo, sentimento subjetivo, tendência de ação (Scherer); (b)
-função adaptativa das emoções básicas, sem hierarquia de "certo/errado";
-(c) **tendência de ação** (Frijda) — cada emoção carrega um impulso
-específico, e reconhecê-lo é o que abre a escolha de segui-lo ou não; (d)
-regulação emocional como habilidade de perceber→nomear→escolher (Gross),
-não como supressão; (e) dois radares de reconhecimento — interno
-(interocepção) e externo (expressões faciais/posturais universais,
-Ekman). Por emoção, o conteúdo também ganhou: origem evolutiva/vantagem
-adaptativa, a própria tendência de ação, sinais visíveis **em outras
-pessoas** (não só em si mesmo), uma cena "imagine que..." conectando com
-o cotidiano, e uma dica prática de aplicação. Dois desafios do jogo foram
-trocados por versões mais aplicadas: "Reconhecer nos outros" e "Aplicar
-na vida real", no lugar de "Função" e "Curiosidade científica" (que
-viraram conteúdo de leitura, não de teste — reduz redundância).
+## O núcleo: check-in corporal (substitui o antigo jogo de associação)
+
+**Mudança de mecanismo, não só de tela.** A versão anterior ensinava as 6
+emoções por leitura linear + um jogo de associação abstrato (tocar
+emoção → tocar descrição, com pontuação). O núcleo agora é um **fluxo de
+reconhecimento que começa na sensação do corpo, não no rótulo** —
+alinhado ao desafio real da alexitimia: a dificuldade não costuma ser
+lembrar o nome certo, é a ponte entre sensação física e palavra.
+
+**Mecanismo ativo:** reconhecimento assistido, nunca recall livre. Em
+nenhum momento o app pergunta "o que você está sentindo?" em aberto — ele
+sempre oferece 2-3 famílias compatíveis com a sensação marcada, com
+"nenhuma dessas ainda" e "ainda não sei" como respostas válidas e
+igualmente ao lado (mesmo peso visual, não linguagem de erro). **Sem
+pontuação, sem certo/errado** — o que cresce é um mapa pessoal, não um
+placar.
+
+Sequência (repetível, uma "sessão" = um check-in):
+1. **Entrada pela sensação** (`scr-body-entry`) — mapa do corpo (silhueta
+   decorativa + botões-hotspot reais, rotulados, sem depender de acertar
+   um pixel) ou lista de descritores (aperto, calor, peso, formigamento,
+   vazio, tensão). Alternável a qualquer momento, sem compromisso fixo.
+2. **Sugestão de famílias** (`scr-family`) — `sensationToFamilies`/
+   `regionToFamilies` mapeiam a sensação pra 2-3 das 6 emoções básicas.
+3. **Intensidade** (`scr-intensity`, só se uma família foi escolhida) —
+   variações descritas (ex.: Irritação → Aborrecimento → Raiva → Fúria),
+   nunca uma régua numérica de 0-10.
+4. **Contexto** (`scr-context`, sempre opcional) — situação disparadora.
+5. **Ação possível** (`scr-action`) — reaproveita `actionTendency` ("o
+   que o corpo quer fazer", sem julgar o impulso) e `healthy` ("uma ação
+   possível", não a única certa) já existentes por emoção; conteúdo
+   genérico e igualmente acolhedor quando nenhuma família foi identificada.
+6. **Registro no mapa** (`scr-map-register`) — confirma o registro em
+   `matiz_bodymap_v1` e mostra um resumo (sensação mais comum, família
+   mais identificada) — sem gráfico complexo, sem comparação social.
+
+O conteúdo rico por emoção (origem evolutiva, tendência de ação, sinais
+em outros, cenário, aplicação — antes só na tela "Aprendizado") não foi
+descartado: alimenta a tela de Ação do check-in **e** continua acessível
+por inteiro, fora do fluxo obrigatório, na **Biblioteca das emoções**
+(`scr-library`, botão de nav, sem jogo, sem pontuação — consulta livre).
 
 ---
 
@@ -90,18 +123,17 @@ viraram conteúdo de leitura, não de teste — reduz redundância).
 
 | Elemento | Superficial (adaptável) | Profundo (preservar) |
 |---|---|---|
-| 6 blocos por emoção | Textos, exemplos, ordem dos blocos | Sempre emparelhar rótulo + pista de corpo + pensamento típico (dual coding, aprendizagem multimodal — Mayer) |
+| 6 blocos por emoção (Biblioteca/Ação) | Textos, exemplos, ordem dos blocos | Sempre emparelhar rótulo + pista de corpo + pensamento típico (dual coding, aprendizagem multimodal — Mayer) |
 | Camada científica colapsável | Texto da curiosidade | Ser **opcional**, nunca obrigatória — reduz carga cognitiva extra para quem não precisa dela (UDL) |
-| Jogo de associação (6 rodadas) | Emojis, cores, mensagens de feedback | Retrieval practice variado (definição/corpo/pensamento/função/ciência/respostas saudáveis) — testing effect |
-| Dica no jogo | Texto do botão | Sempre disponível, sem penalidade — autonomia (COM-B/motivação) |
+| Check-in corporal (6 telas) | Emojis, ícones, texto das sensações/famílias | Reconhecimento assistido (2-3 opções + "nenhuma"/"ainda não sei"), nunca recall livre nem pergunta aberta — sem pontuação, sem certo/errado |
+| Mapa pessoal (`matiz_bodymap_v1`) | Layout do resumo | Cresce com o tempo; mostra frequência (sensação/família), nunca compara com outras pessoas nem define uma "meta" |
+| "Nenhuma dessas ainda" / "Ainda não sei" | Texto do botão | Mesmo peso visual das opções "certas" — recusar rotular é uma resposta válida, não uma falha |
 | Retomada de sessão | Texto do banner | **Sem culpa** — nunca linguagem de "você abandonou"; efeito Zeigarnik usado a favor do usuário, não como pressão |
 | Plano "quando eu perceber ___" | Chips de exemplo, redação | Formato implementation intention (Gollwitzer, 1999): gatilho específico + ação específica — é o que faz a prática sair do app e entrar no dia a dia (COM-B: Oportunidade) |
 | Cartão de referência rápida (export) | Layout, cores | Ser um artefato físico/portátil usável fora do app — Oportunidade física (COM-B) |
 | Preferências (movimento, texto, contraste, áudio) | Ícones, textos | Controle explícito do usuário sobre estimulação sensorial e modalidade de apresentação — nunca inferido só do sistema operacional |
-| Autoavaliação antes/depois | Perguntas exatas, rótulos da escala | Não é instrumento validado — isso é sempre dito explicitamente; opcional e sem pressão |
-| Tailoring (perfil "corpo primeiro") | Nome da opção, texto | Reordena os 6 desafios do jogo — corpo antes do rótulo — para quem relata mais dificuldade em perceber sensações antes de nomear; escolhido em Preferências, não no onboarding forçado |
-| Dose Cultivada (check-in semanal) | Tags, texto do card | Auto-relato semanal de prática ativa do plano quando-então; só aparece pra quem já jogou uma vez; nunca bloqueante; "dispensar essa semana" é uma opção tão válida quanto registrar |
-| Pontuação e feedback | Cores, emojis das mensagens | Reforço sempre não-punitivo; nunca linguagem competitiva ou de comparação social |
+| Autoavaliação antes/depois | Perguntas exatas, rótulos da escala | Não é instrumento validado — isso é sempre dito explicitamente; opcional, roda só no onboarding (uma vez) |
+| Dose Cultivada (check-in semanal) | Tags, texto do card | Auto-relato semanal de prática ativa do plano quando-então; só aparece pra quem já tem registro no mapa; nunca bloqueante; "dispensar essa semana" é uma opção tão válida quanto registrar |
 | Encerramento | Texto do fechamento | Sem gatilho de reengajamento artificial (sem "volte amanhã", sem streak, sem notificação) — bem-estar digital (Peters/Positive Computing) acima de tempo de tela |
 
 ---
@@ -117,8 +149,9 @@ viraram conteúdo de leitura, não de teste — reduz redundância).
   com psicólogo/a — o app não substitui, mas municia essa conversa.
 - **Motivation (reflexiva):** plano "quando-então" ao final, conectando a
   prática a um gatilho real do dia a dia.
-- **Motivation (automática):** feedback imediato e afetivo no jogo, sem
-  ser manipulador — celebra o acerto, acolhe o erro, nunca envergonha.
+- **Motivation (automática):** reconhecimento assistido reduz a fricção
+  de "ter que adivinhar sozinho"; o mapa pessoal reforça sem comparar com
+  ninguém — cresce com o próprio uso, não com desempenho.
 
 ---
 
@@ -136,11 +169,13 @@ prender atenção além do necessário para o objetivo educativo.
 
 - Múltiplos meios de representação: texto + ícone + cor + áudio opcional
   (Web Speech API, `pt-BR`, com detecção de suporte do navegador).
-- Múltiplos meios de ação/expressão: jogo por clique/toque E por teclado;
-  sem cronômetro; dica sempre disponível; retomada sem perda de progresso.
+- Múltiplos meios de ação/expressão: duas formas de marcar a sensação
+  (mapa do corpo ou lista de texto, alternáveis a qualquer momento); sem
+  cronômetro; retomada sem perda de progresso.
 - Múltiplos meios de engajamento: preferências explícitas (movimento,
   contraste, tamanho de texto); linguagem literal, sem metáforas obscuras;
-  autoavaliação e captura de vocabulário sempre opcionais.
+  autoavaliação e captura de vocabulário sempre opcionais; "ainda não
+  sei" sempre disponível, sem exigir uma resposta forçada.
 
 ---
 

@@ -177,6 +177,31 @@ main { max-width: 980px; margin: 0 auto; padding: 92px 20px 40px; }
 .mood-axis-right { right: 6px; top: 50%; transform: translateY(-50%); }
 .mood-feedback { margin-top: 16px; min-height: 60px; }
 
+/* Check-in corporal: entrada pela sensação */
+.entry-mode-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+.entry-tab { flex: 1; border: 1.5px solid var(--line); background: var(--white); border-radius: 999px; padding: 10px 14px; font-weight: 600; font-size: .92rem; color: var(--muted); }
+.entry-tab[aria-selected="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.body-silhouette-wrap { position: relative; max-width: 200px; margin: 0 auto; }
+.body-silhouette { width: 100%; display: block; }
+.body-hotspots { position: absolute; inset: 0; }
+.body-hotspot {
+  position: absolute; transform: translate(-50%, -50%); white-space: nowrap;
+  background: var(--white); border: 1.5px solid var(--primary); color: var(--primary-d);
+  border-radius: 999px; padding: 5px 10px; font-size: .78rem; font-weight: 700; box-shadow: var(--shadow);
+}
+.body-hotspot:hover { background: var(--primary-l); }
+
+.family-card {
+  width: 100%; display: flex; align-items: center; gap: 14px; text-align: left;
+  border: 2px solid var(--line); border-radius: 14px; background: var(--white);
+  padding: 14px 16px; margin-bottom: 10px; font-size: 1rem; color: var(--ink);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.family-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(51,49,46,.08); }
+.family-card-def { font-size: .88rem; color: var(--muted); font-weight: 400; }
+.family-card-more { justify-content: center; text-align: center; border-style: dashed; color: var(--muted); font-weight: 600; }
+
 .vocab-row { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .vocab-row label { font-weight: 600; display: block; margin-bottom: 8px; }
 .vocab-row input { width: 100%; max-width: 320px; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 14px; font-family: inherit; font-size: 1rem; }

@@ -27,6 +27,7 @@
   </div>
   <div class="nav-actions">
     <button id="skip-btn" class="nav-btn hidden">Pular etapa</button>
+    <button id="library-btn" class="nav-btn">📖 Biblioteca</button>
     <button id="prefs-btn" class="nav-btn">⚙️ Preferências</button>
     <button id="data-btn" class="nav-btn">Meus dados</button>
     <button id="back-btn" class="nav-btn">← Voltar</button>
@@ -42,7 +43,7 @@
       <img class="hero-logo" src="assets/matiz-logo.svg" alt="Matiz">
       <h1>Matiz</h1>
       <p class="tagline">cada sentimento tem seu tom</p>
-      <p class="lead">Um espaço para aprender a reconhecer e nomear o que sentimos, com mais precisão. Vamos conhecer as seis emoções básicas e praticar em jogos curtos, no seu ritmo.</p>
+      <p class="lead">Um espaço para reconhecer o que você sente começando pelo corpo, não pela palavra. Marque uma sensação, veja famílias de emoção compatíveis e construa, sessão após sessão, um mapa pessoal — sem certo ou errado.</p>
 
       <div id="resume-banner" class="card hidden" style="max-width:640px;margin:0 auto 20px;text-align:left">
         <p style="margin:0 0 12px"><strong>Você tem uma sessão em andamento.</strong> Sem problema nenhum ter pausado — quer continuar de onde parou ou começar de novo?</p>
@@ -70,7 +71,7 @@
 
         <div class="rationale-box">
           <h3>Por que nomear com precisão importa</h3>
-          <p style="margin:0">Pesquisas sobre <strong>granularidade emocional</strong> (Lisa Feldman Barrett) mostram que nomear o que sentimos com precisão — não só "bem" ou "mal" — ajuda a regular melhor as emoções. É como o paladar: quem só reconhece "doce e salgado" sente menos nuances do que quem reconhece sabores específicos. Este jogo existe pra ampliar esse vocabulário.</p>
+          <p style="margin:0">Pesquisas sobre <strong>granularidade emocional</strong> (Lisa Feldman Barrett) mostram que nomear o que sentimos com precisão — não só "bem" ou "mal" — ajuda a regular melhor as emoções. É como o paladar: quem só reconhece "doce e salgado" sente menos nuances do que quem reconhece sabores específicos. O Matiz existe pra ampliar esse vocabulário, começando pelo corpo.</p>
         </div>
 
         <div class="about-list">
@@ -80,7 +81,7 @@
           </div>
           <div class="about-item">
             <div class="about-icon" aria-hidden="true">🧩</div>
-            <p>Você vai <strong>ler sobre cada emoção</strong> e depois <strong>praticar</strong> em jogos de associação, no seu próprio ritmo — sem cronômetro, sem penalidade por errar, e você pode pausar e continuar depois.</p>
+            <p>O check-in começa numa <strong>sensação do corpo</strong>, sugere famílias de emoção compatíveis (nunca uma pergunta aberta) e termina num plano pra vida real — sem pontuação, sem certo/errado, e você pode pausar e continuar depois.</p>
           </div>
           <div class="about-item">
             <div class="about-icon" aria-hidden="true">🌐</div>
@@ -200,61 +201,103 @@
     </div>
   </section>
 
-  <!-- APRENDIZADO -->
-  <section id="scr-learning" class="hidden fade-in">
+  <!-- BIBLIOTECA DAS EMOÇÕES (referência opcional, sem jogo) -->
+  <section id="scr-library" class="hidden fade-in">
     <div class="section-header">
-      <h2>Conhecendo as emoções</h2>
+      <h2>Biblioteca das emoções</h2>
       <div style="display:flex;gap:8px">
         <button id="prev-emotion" class="nav-btn">← Anterior</button>
         <button id="next-emotion" class="nav-btn primary">Próximo →</button>
       </div>
     </div>
+    <p style="color:var(--muted);margin-top:-8px">Consulta livre, sem jogo — leia sobre qualquer uma das 6 emoções quando quiser.</p>
     <div class="progress-track"><div id="learning-progress" class="progress-fill" style="width:16.67%"></div></div>
     <div id="emotion-content" class="card"></div>
-    <div style="text-align:center;margin-top:20px">
-      <button id="go-to-game" class="btn-cta hidden" style="font-size:1rem">Vamos praticar →</button>
+  </section>
+
+  <!-- CHECK-IN 1: ENTRADA PELA SENSAÇÃO -->
+  <section id="scr-body-entry" class="hidden fade-in">
+    <div class="hero">
+      <h2>O que você sente no corpo agora?</h2>
+      <p class="lead">Não precisa saber o nome da emoção ainda — só marque onde e como você sente algo.</p>
+    </div>
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div class="entry-mode-toggle" role="tablist" aria-label="Como marcar a sensação">
+        <button type="button" id="entry-mode-body" class="entry-tab" role="tab">🧍 Mapa do corpo</button>
+        <button type="button" id="entry-mode-text" class="entry-tab" role="tab">📋 Lista de sensações</button>
+      </div>
+      <div id="body-map-panel">
+        <div class="body-silhouette-wrap">
+          <svg class="body-silhouette" viewBox="0 0 200 400" aria-hidden="true">
+            <circle cx="100" cy="50" r="38" fill="#EDE7DC"/>
+            <path d="M60 92 Q100 80 140 92 L152 220 Q100 242 48 220 Z" fill="#EDE7DC"/>
+            <rect x="18" y="140" width="28" height="115" rx="14" fill="#EDE7DC"/>
+            <rect x="154" y="140" width="28" height="115" rx="14" fill="#EDE7DC"/>
+            <rect x="64" y="228" width="30" height="140" rx="15" fill="#EDE7DC"/>
+            <rect x="106" y="228" width="30" height="140" rx="15" fill="#EDE7DC"/>
+          </svg>
+          <div id="body-hotspots" class="body-hotspots"></div>
+        </div>
+      </div>
+      <div id="sensation-list-panel" class="hidden">
+        <div id="sensation-chips" class="chip-row" style="justify-content:center"></div>
+      </div>
     </div>
   </section>
 
-  <!-- JOGO -->
-  <section id="scr-game" class="hidden fade-in">
-    <div class="section-header">
-      <h2>Jogo de associação</h2>
-      <span class="score-pill">Pontuação: <span id="score">0</span></span>
+  <!-- CHECK-IN 2: FAMÍLIAS EMOCIONAIS SUGERIDAS -->
+  <section id="scr-family" class="hidden fade-in">
+    <div class="hero">
+      <h2>Pode ser uma dessas</h2>
+      <p class="lead">Com base no que você marcou, aqui estão famílias de emoção compatíveis — reconhecer é diferente de adivinhar do zero.</p>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
-      <div class="progress-track" style="margin-bottom:0"><div id="game-progress" class="progress-fill" style="width:0%;background:var(--accent)"></div></div>
-      <span id="progress-text" style="white-space:nowrap;font-weight:600;font-size:.9rem">Desafio 1/7</span>
-    </div>
-    <p id="round-purpose" class="round-purpose"></p>
+    <div id="family-options" class="card" style="max-width:560px;margin:0 auto"></div>
+  </section>
 
-    <div class="instructions">
-      <strong>Como jogar:</strong>
-      <ol>
-        <li>Toque numa <strong>emoção</strong> na coluna da esquerda.</li>
-        <li>Depois toque na <strong>descrição correspondente</strong>, na coluna da direita.</li>
-        <li>Se acertar, ela fica marcada com ✓. Se errar, tente outra vez — sem pressa.</li>
-      </ol>
+  <!-- CHECK-IN 3: INTENSIDADE -->
+  <section id="scr-intensity" class="hidden fade-in">
+    <div class="hero">
+      <h2 id="intensity-title">Qual a intensidade?</h2>
+      <p class="lead">Dentro dessa família, qual descrição combina mais com o que você sente agora?</p>
     </div>
+    <div id="intensity-options" class="card" style="max-width:560px;margin:0 auto"></div>
+  </section>
 
-    <div class="card" style="position:relative">
-      <div id="confetti-container" class="confetti-container"></div>
-      <h3 id="game-question" style="text-align:center">Combine as emoções com suas características</h3>
-      <div id="game-content" class="game-grid"></div>
+  <!-- CHECK-IN 4: CONTEXTO (OPCIONAL) -->
+  <section id="scr-context" class="hidden fade-in">
+    <div class="hero">
+      <h2>O que estava acontecendo?</h2>
+      <p class="lead">Totalmente opcional — só ajuda a dar contexto pro seu mapa.</p>
     </div>
-
-    <div class="hint-row">
-      <button id="hint-btn" class="hint-btn">💡 Preciso de uma dica</button>
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div id="context-chips" class="chip-row"></div>
+      <textarea id="context-note" class="plan-input" style="min-height:70px" placeholder="Quer contar mais? (opcional)"></textarea>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px">
+        <button id="context-continue-btn" class="btn-cta" style="font-size:1rem;padding:12px 28px">Continuar</button>
+        <button id="context-skip-btn" class="skip-check">Pular essa parte</button>
+      </div>
     </div>
+  </section>
 
-    <div style="text-align:center">
-      <button id="next-game" class="btn-cta hidden" style="font-size:1rem">Próximo desafio</button>
-      <button id="finish-game" class="btn-cta hidden" style="font-size:1rem">Finalizar</button>
+  <!-- CHECK-IN 5: AÇÃO POSSÍVEL -->
+  <section id="scr-action" class="hidden fade-in">
+    <div class="hero">
+      <h2>O que fazer com isso</h2>
     </div>
+    <div class="card" style="max-width:640px;margin:0 auto" id="action-content"></div>
+    <div style="text-align:center;margin-top:24px">
+      <button id="action-continue-btn" class="btn-cta">Continuar →</button>
+    </div>
+  </section>
 
-    <div id="feedback" class="feedback hidden" role="status" aria-live="polite">
-      <div id="feedback-content"></div>
-      <button id="feedback-close" class="feedback-close" aria-label="Fechar aviso">✕</button>
+  <!-- CHECK-IN 6: REGISTRO NO MAPA PESSOAL -->
+  <section id="scr-map-register" class="hidden fade-in">
+    <div class="hero">
+      <h2>Registrado no seu mapa 🗺️</h2>
+    </div>
+    <div class="card" style="max-width:560px;margin:0 auto" id="map-register-summary"></div>
+    <div style="text-align:center;margin-top:24px">
+      <button id="map-register-continue-btn" class="btn-cta">Continuar →</button>
     </div>
   </section>
 
@@ -279,9 +322,8 @@
       <h2>Você concluiu o Matiz 🌿</h2>
     </div>
     <div class="card" style="max-width:640px;margin:0 auto">
-      <p>Pontuação final: <span class="result-score" id="final-score">0</span> pontos</p>
       <div id="result-delta"></div>
-      <p>Agora você tem mais palavras e pistas do corpo para reconhecer o que sente. Pode fechar esta página quando quiser — seu progresso já está salvo neste dispositivo.</p>
+      <p>Agora você tem mais uma peça no seu mapa pessoal. Pode fechar esta página quando quiser — tudo já está salvo neste dispositivo.</p>
 
       <div class="disclaimer-box">
         Se quiser, use os resultados abaixo como ponto de partida numa conversa com seu/sua psicólogo/a. Tudo fica salvo só neste dispositivo — nada é enviado automaticamente.
@@ -303,7 +345,7 @@
       </div>
     </div>
     <div style="text-align:center;margin-top:24px">
-      <button id="restart-btn" class="btn-cta secondary">Jogar de novo</button>
+      <button id="restart-btn" class="btn-cta secondary">Fazer novo check-in</button>
     </div>
   </section>
 
@@ -317,7 +359,7 @@
       🔒 Seus dados ficam salvos <strong>somente neste dispositivo</strong> (localStorage do navegador). Nada sai daqui a menos que você exporte manualmente.
     </div>
     <div class="card">
-      <h3>Histórico de sessões</h3>
+      <h3>Meu mapa pessoal</h3>
       <div id="session-list"></div>
     </div>
     <div class="card">
