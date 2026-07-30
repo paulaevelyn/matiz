@@ -153,6 +153,29 @@ main { max-width: 980px; margin: 0 auto; padding: 92px 20px 40px; }
 .concept-icon { flex: none; width: 44px; height: 44px; border-radius: 12px; background: var(--primary-l); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 .concept-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
 .concept-card p { margin: 0; }
+.concept-card p + p { margin-top: 6px; }
+
+/* Termômetro emocional (circumplexo) */
+.mood-pad-wrap { position: relative; padding: 34px 20px 20px 84px; }
+.mood-pad {
+  position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; cursor: crosshair;
+  border: 2px solid var(--line); overflow: hidden;
+  background-image: conic-gradient(from 0deg, var(--ok-l) 0deg 90deg, var(--primary-l) 90deg 180deg, #E3DCE8 180deg 270deg, var(--notice-l) 270deg 360deg);
+}
+.mood-pad::before, .mood-pad::after { content: ''; position: absolute; background: rgba(51,49,46,.18); }
+.mood-pad::before { left: 0; right: 0; top: 50%; height: 1px; }
+.mood-pad::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+.mood-marker {
+  position: absolute; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  transform: translate(-50%, -50%); pointer-events: none;
+}
+.mood-axis-label { position: absolute; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.mood-axis-top { top: 6px; left: 84px; right: 20px; text-align: center; }
+.mood-axis-bottom { bottom: 0; left: 84px; right: 20px; text-align: center; }
+.mood-axis-left { left: 0; top: 50%; transform: translateY(-50%); width: 74px; text-align: right; }
+.mood-axis-right { right: 6px; top: 50%; transform: translateY(-50%); }
+.mood-feedback { margin-top: 16px; min-height: 60px; }
 
 .vocab-row { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .vocab-row label { font-weight: 600; display: block; margin-bottom: 8px; }

@@ -31,12 +31,49 @@ document.addEventListener('DOMContentLoaded', function () {
       text: 'Cada emoção vem com um "programa" pronto: um impulso específico do que fazer — o medo empurra pra fugir, a raiva empurra pra enfrentar, o nojo empurra pra afastar. Isso se chama <strong>tendência de ação</strong>. Reconhecer esse impulso não significa obedecer a ele automaticamente — significa ganhar a escolha de segui-lo ou não.'
     },
     {
+      icon: '🧠', title: 'Seu cérebro emocional',
+      text: 'Quando algo acontece, a <strong>amígdala</strong> dá o alarme rápido, antes de qualquer análise consciente. A <strong>ínsula</strong> lê os sinais do corpo (é ela que te avisa do coração acelerado, do nó na garganta). O <strong>córtex pré-frontal</strong> é o "painel de controle" mais lento e mais reflexivo — é ele que avalia, pondera e ajuda a escolher a resposta, e é a conexão entre ele e a amígdala que fica mais forte quando a gente pratica nomear emoções. Por baixo disso tudo, o <strong>sistema nervoso autônomo</strong> funciona como acelerador (sistema simpático, prepara ação) e freio (sistema parassimpático, traz calma) — as sensações do corpo que você percebe em cada emoção são esse sistema em ação.'
+    },
+    {
       icon: '🎛️', title: 'O que é regulação emocional',
       text: 'Regular uma emoção <strong>não é reprimir</strong> nem "ficar bem" o tempo todo. É um processo de três passos: <strong>perceber</strong> o que está acontecendo no corpo, <strong>nomear</strong> a emoção com precisão, e só então <strong>escolher</strong> a resposta — em vez de reagir no piloto automático. Regular bem não significa nunca sentir raiva ou medo; significa ter mais opções quando eles aparecerem.'
     },
     {
       icon: '👥', title: 'Reconhecer em você e nos outros',
       text: 'Existem dois radares: um <strong>interno</strong> (interocepção) — os sinais do seu próprio corpo — e um <strong>externo</strong> — expressões faciais e de postura que, segundo o pesquisador Paul Ekman, se repetem de forma parecida em culturas bem diferentes. Treinar os dois radares é a base do que costuma ser chamado de inteligência emocional.'
+    },
+    {
+      icon: '🧭', title: 'Emoção como informação (Terapia Focada nas Emoções)',
+      text: 'Na Terapia Focada nas Emoções (Leslie Greenberg), a emoção não é vista como "problema" a ser eliminado, mas como uma <strong>fonte de informação</strong> sobre o que importa pra você — o trabalho é <strong>chegar até ela</strong>, sentir o que realmente está ali, e usar essa informação, em vez de evitá-la ou ser dominado por ela. Nem toda emoção que aparece, porém, é o retrato mais direto do que está acontecendo — e é isso que vamos ver a seguir.'
+    }
+  ];
+
+  // ---------------------------------------------------------------
+  // Tipologia de respostas emocionais (Greenberg — Terapia Focada nas
+  // Emoções): nem toda emoção sentida é um sinal direto e confiável da
+  // situação atual. Reconhecer o TIPO de resposta é uma camada a mais
+  // de consciência emocional, além de só nomear a emoção.
+  // ---------------------------------------------------------------
+  var eftTypes = [
+    {
+      icon: '🎯', title: 'Emoção primária adaptativa',
+      text: 'Uma resposta direta e útil à situação de agora. Ela combina com o tamanho e o tipo do que está acontecendo.',
+      example: 'Sentir medo real diante de um perigo real. Sentir tristeza genuína por uma perda recente.'
+    },
+    {
+      icon: '🕰️', title: 'Emoção primária mal-adaptativa',
+      text: 'Um padrão antigo, aprendido em outro momento da vida, que continua sendo ativado mesmo quando não cabe mais na situação atual.',
+      example: 'Uma vergonha profunda ativada por uma crítica pequena — como se ainda fosse aquela criança sendo julgada.'
+    },
+    {
+      icon: '🌊', title: 'Emoção secundária',
+      text: 'Uma emoção que aparece por cima de outra mais primária — às vezes reagindo a ela, às vezes escondendo-a.',
+      example: 'Raiva que aparece no lugar de uma tristeza ou de um medo mais vulnerável de se mostrar.'
+    },
+    {
+      icon: '🎭', title: 'Emoção instrumental',
+      text: 'Expressa — nem sempre de forma consciente — para produzir um efeito em alguém, mais do que sentida de forma genuína naquele momento.',
+      example: 'Um choro ou uma irritação usados (mesmo sem perceber) pra conseguir atenção ou fazer o outro ceder.'
     }
   ];
 
@@ -140,6 +177,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   ];
 
+  // ---------------------------------------------------------------
+  // Circumplexo de Russell (1980): toda experiência emocional pode
+  // ser localizada em duas dimensões contínuas — valência (agradável
+  // / desagradável) e ativação (muita / pouca energia) — antes mesmo
+  // de virar uma categoria com nome. Serve de complemento ao ensino
+  // categórico das 6 emoções básicas.
+  // ---------------------------------------------------------------
+  var moodQuadrants = {
+    'alta-desagradavel': { label: 'Muita energia + desagradável', words: 'raiva, medo, estresse, ansiedade' },
+    'alta-agradavel': { label: 'Muita energia + agradável', words: 'alegria, entusiasmo, euforia, orgulho' },
+    'baixa-desagradavel': { label: 'Pouca energia + desagradável', words: 'tristeza, cansaço, tédio, desânimo' },
+    'baixa-agradavel': { label: 'Pouca energia + agradável', words: 'calma, serenidade, satisfação, contentamento' }
+  };
+
   var extraChips = ['não souber nomear o que sinto'];
 
   var gameTypes = [
@@ -236,7 +287,8 @@ document.addEventListener('DOMContentLoaded', function () {
     gameBreakdown: [],
     vocabWords: {},
     ifThenPlan: '',
-    orderedGameTypes: gameTypes.slice()
+    orderedGameTypes: gameTypes.slice(),
+    moodPoint: null
   };
 
   var totalSteps = emotions.length + gameTypes.length;
@@ -251,6 +303,8 @@ document.addEventListener('DOMContentLoaded', function () {
     prefs: document.getElementById('scr-prefs'),
     check: document.getElementById('scr-check'),
     concept: document.getElementById('scr-concept'),
+    thermometer: document.getElementById('scr-thermometer'),
+    efttypes: document.getElementById('scr-efttypes'),
     learning: document.getElementById('scr-learning'),
     game: document.getElementById('scr-game'),
     ifthen: document.getElementById('scr-ifthen'),
@@ -287,6 +341,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     conceptList: document.getElementById('concept-list'),
     conceptContinueBtn: document.getElementById('concept-continue-btn'),
+
+    moodPad: document.getElementById('mood-pad'),
+    moodMarker: document.getElementById('mood-marker'),
+    moodFeedback: document.getElementById('mood-feedback'),
+    thermometerContinueBtn: document.getElementById('thermometer-continue-btn'),
+
+    eftList: document.getElementById('eft-list'),
+    eftContinueBtn: document.getElementById('eft-continue-btn'),
 
     prevEmotion: document.getElementById('prev-emotion'),
     nextEmotion: document.getElementById('next-emotion'),
@@ -353,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function updateNav() {
     var isStart = state.screen === 'start';
     el.backBtn.disabled = isStart;
-    el.skipBtn.classList.toggle('hidden', !(state.screen === 'concept' || state.screen === 'learning' || state.screen === 'game'));
+    el.skipBtn.classList.toggle('hidden', !(state.screen === 'concept' || state.screen === 'thermometer' || state.screen === 'efttypes' || state.screen === 'learning' || state.screen === 'game'));
     el.dataBtn.classList.toggle('hidden', state.screen === 'data');
   }
 
@@ -382,6 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
       selfBefore: state.selfBefore,
       vocabWords: state.vocabWords,
       gameBreakdown: state.gameBreakdown,
+      moodPoint: state.moodPoint,
       savedAt: new Date().toISOString()
     };
     try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* indisponível */ }
@@ -470,6 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
     state.selfBefore = progress.selfBefore || [null, null];
     state.vocabWords = progress.vocabWords || {};
     state.gameBreakdown = progress.gameBreakdown || [];
+    state.moodPoint = progress.moodPoint || null;
     completedSteps = progress.completedSteps || 0;
     el.score.textContent = state.score;
     updateOverallProgress();
@@ -566,6 +630,53 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   el.conceptContinueBtn.addEventListener('click', function () {
+    resetMoodPad();
+    showScreen('thermometer');
+  });
+
+  // ---------------------------------------------------------------
+  // Termômetro Emocional — Circumplexo de Russell (valência x ativação)
+  // ---------------------------------------------------------------
+  function resetMoodPad() {
+    el.moodMarker.classList.add('hidden');
+    el.moodFeedback.innerHTML = '<p class="empty-note">Toque em qualquer ponto do quadrado pra marcar como você está se sentindo agora.</p>';
+  }
+
+  function handleMoodPadPick(clientX, clientY) {
+    var rect = el.moodPad.getBoundingClientRect();
+    var x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    var y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
+    var valence = x; // 0 = desagradável, 1 = agradável
+    var arousal = 1 - y; // 0 = pouca energia, 1 = muita energia (y cresce pra baixo)
+
+    el.moodMarker.style.left = (x * 100) + '%';
+    el.moodMarker.style.top = (y * 100) + '%';
+    el.moodMarker.classList.remove('hidden');
+
+    var quadKey = (arousal >= 0.5 ? 'alta' : 'baixa') + '-' + (valence >= 0.5 ? 'agradavel' : 'desagradavel');
+    var quad = moodQuadrants[quadKey];
+    state.moodPoint = { valence: Math.round(valence * 100) / 100, arousal: Math.round(arousal * 100) / 100, quadrant: quadKey };
+
+    el.moodFeedback.innerHTML = '<p><strong>' + quad.label + '.</strong> Emoções que costumam morar por aqui: ' + quad.words + '.</p><p class="info-note">Não existe posição errada — isso é só um retrato de agora, não um rótulo fixo.</p>';
+  }
+
+  el.moodPad.addEventListener('click', function (ev) { handleMoodPadPick(ev.clientX, ev.clientY); });
+
+  el.thermometerContinueBtn.addEventListener('click', function () {
+    renderEftScreen();
+    showScreen('efttypes');
+  });
+
+  // ---------------------------------------------------------------
+  // Nem toda emoção é o que parece — tipologia EFT (Greenberg)
+  // ---------------------------------------------------------------
+  function renderEftScreen() {
+    el.eftList.innerHTML = eftTypes.map(function (t) {
+      return '<div class="concept-card"><div class="concept-icon" aria-hidden="true">' + t.icon + '</div><div><h3>' + t.title + '</h3><p>' + t.text + '</p><p class="science-note" style="border-top:none;padding-top:0;margin-top:6px"><strong>Exemplo:</strong> ' + t.example + '</p></div></div>';
+    }).join('');
+  }
+
+  el.eftContinueBtn.addEventListener('click', function () {
     showScreen('learning');
     showEmotion(state.emotionIndex);
     completedSteps = 0;
@@ -880,6 +991,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // ---------------------------------------------------------------
   el.skipBtn.addEventListener('click', function () {
     if (state.screen === 'concept') {
+      resetMoodPad();
+      showScreen('thermometer');
+    } else if (state.screen === 'thermometer') {
+      renderEftScreen();
+      showScreen('efttypes');
+    } else if (state.screen === 'efttypes') {
       showScreen('learning');
       showEmotion(state.emotionIndex);
       completedSteps = 0;
@@ -949,7 +1066,8 @@ document.addEventListener('DOMContentLoaded', function () {
       selfAfter: state.selfAfter,
       breakdown: state.gameBreakdown.map(function (b) { return b; }),
       vocabWords: vocabList,
-      ifThenPlan: state.ifThenPlan || null
+      ifThenPlan: state.ifThenPlan || null,
+      moodPoint: state.moodPoint || null
     };
     saveSession(session);
     clearProgress();
@@ -978,6 +1096,7 @@ document.addEventListener('DOMContentLoaded', function () {
     state.vocabWords = {};
     state.ifThenPlan = '';
     state.orderedGameTypes = gameTypes.slice();
+    state.moodPoint = null;
     completedSteps = 0;
     el.score.textContent = 0;
     updateOverallProgress();
@@ -998,7 +1117,9 @@ document.addEventListener('DOMContentLoaded', function () {
       case 'prefs': showScreen('start'); break;
       case 'check': showScreen('start'); break;
       case 'concept': showScreen('start'); break;
-      case 'learning': showScreen('concept'); break;
+      case 'thermometer': showScreen('concept'); break;
+      case 'efttypes': showScreen('thermometer'); break;
+      case 'learning': showScreen('efttypes'); break;
       case 'game': showScreen('learning'); break;
       case 'ifthen': showScreen('game'); break;
       case 'result': showScreen('ifthen'); break;
@@ -1086,6 +1207,7 @@ document.addEventListener('DOMContentLoaded', function () {
         '<p>Pontuação: ' + s.score + ' / ' + s.totalPossible + '</p>' +
         (breakdownRows ? '<p><strong>Desempenho por desafio:</strong></p><ul>' + breakdownRows + '</ul>' : '') +
         (vocabRows ? '<p><strong>Palavras próprias:</strong></p><ul>' + vocabRows + '</ul>' : '') +
+        (s.moodPoint ? '<p><strong>Termômetro emocional:</strong> valência ' + s.moodPoint.valence + ', ativação ' + s.moodPoint.arousal + ' (' + (moodQuadrants[s.moodPoint.quadrant] ? moodQuadrants[s.moodPoint.quadrant].label : s.moodPoint.quadrant) + ')</p>' : '') +
         (s.ifThenPlan ? '<p><strong>Plano:</strong> ' + s.ifThenPlan + '</p>' : '') +
         '</div>';
     }).join('');

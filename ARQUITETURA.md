@@ -28,6 +28,44 @@ rico, sem que isso implique patologizar ninguém.
 
 **Superficial:** os emojis, as cores por emoção, os exemplos de frases.
 
+### Terapia Focada nas Emoções, neurobiologia e Circumplexo (Russell)
+
+Três adições de fundamentação, todas a serviço do objetivo central do
+app — **educar e desenvolver consciência emocional**, não só ensinar
+rótulos:
+
+1. **Neurobiologia** — novo card conceitual explicando amígdala (alarme
+   rápido), ínsula (leitura do corpo/interocepção), córtex pré-frontal
+   (avaliação e escolha da resposta) e sistema nervoso autônomo
+   (simpático=acelerador, parassimpático=freio). Objetivo: dar um "porquê"
+   biológico simples pras sensações de corpo já ensinadas por emoção,
+   sem jargão técnico excessivo.
+2. **Terapia Focada nas Emoções (Greenberg)** — dois acréscimos:
+   (a) reformulação de "pra que servem as emoções" como **informação**,
+   não problema a eliminar — "chegar até" a emoção em vez de evitá-la;
+   (b) nova etapa **"Nem toda emoção é o que parece"**, com a tipologia
+   de respostas emocionais: primária adaptativa, primária mal-adaptativa,
+   secundária e instrumental. **Mecanismo ativo:** ensinar que a mesma
+   emoção "nomeada corretamente" pode ainda assim não ser a informação
+   mais confiável do momento — uma camada de consciência emocional além
+   da granularidade lexical.
+3. **Circumplexo de Russell (1980)** — nova etapa **"Termômetro
+   emocional"**, um quadrado interativo de valência (desagradável↔
+   agradável) x ativação (pouca↔muita energia), onde a pessoa marca como
+   está se sentindo agora e recebe de volta o quadrante + palavras que
+   costumam habitar ali. **Mecanismo ativo:** ensinar que toda emoção
+   pode ser descrita por duas dimensões contínuas *antes* de virar uma
+   categoria com nome — complementa (não substitui) o ensino categórico
+   das 6 emoções básicas, e conecta com a própria ideia de granularidade
+   emocional (Barrett) que já fundamenta o app.
+
+**Nova sequência de telas:** Início → Preferências/Autoavaliação →
+Conceitos → **Termômetro Emocional** → **Nem toda emoção é o que
+parece** → Aprendizado (6 emoções) → Jogo (7 desafios) → Quando-então →
+Resultado. As duas novas etapas são puladas com o mesmo botão "Pular
+etapa" já existente, sem quebrar o fluxo pra quem preferir ir direto às
+6 emoções.
+
 ### Camadas teóricas adicionais (tela "O que é uma emoção?")
 
 Antes das 6 emoções, uma tela conceitual cobre: (a) os três componentes de
